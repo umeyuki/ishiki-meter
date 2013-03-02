@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>意識メーター</title>
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.6.0/build/cssreset/cssreset-min.css">
+    <link rel="stylesheet" href="public/style.css">
+  </head>
+  <body>
+    <div id="container">
+      <div id="header">
+        <h1><img src="public/images/header.jpg"></h1>
+      </div>
+      <div id="main">
+        <div id="contents">
+          % if ( $screen_name) {
+          <ul>
+            <li><a href="/logout">ログアウト</a></li>
+          </ul>
+          % } else {
+          <ul>
+            <li><a href="/login">Twitterログイン</a></li>
+          </ul>
+          % }
+        </div> <!-- #content -->
+        <div id="sidebar">
+          
+        </div> <!-- #sidebar -->
+      </div> <!-- #main -->
+      <div id="footer">Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a></div>
+    </div>
+  </body>
+</html>
+
+
