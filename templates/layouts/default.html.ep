@@ -19,9 +19,12 @@
           </ul>
           % } else {
           <ul>
-            <li><a href="/login">Twitterログイン</a></li>
+            <li><a href="/auth/twitter/">Twitterログイン</a></li>
+            <li><a href="/auth/facebook/">facebookログイン</a></li>
+            
           </ul>
           % }
+          <%= content %>
         </div> <!-- #content -->
         <div id="sidebar">
           
