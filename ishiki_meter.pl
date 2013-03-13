@@ -28,9 +28,15 @@ plugin 'Web::Auth',
           key         => $config->{twitter}->{consumer_key},
           secret      => $config->{twitter}->{consumer_secret},
           on_finished => sub {
-              my ( $c, $access_token, $access_secret ) = @_;
+              my ($c, $access_token, $access_secret, $account_info) = @_;
+              my $session = Plack::Session->new( $c->req->env );
+              $session->set('access_token' => $access_token);
+              $session->set('access_secret' => $access_secret);
+#              $session('account_info' => $account_info->{screen_name});
+              $session->set('screen_name' => $account_info->{screen_name});
+              warn "check it!";
+              warn Dumper $account_info->{screen_name};
               $c->redirect_to('/');
-              
           };
 
 plugin 'Web::Auth',
@@ -42,6 +48,10 @@ plugin 'Web::Auth',
               my $session = Plack::Session->new( $c->req->env );
               $session->set( 'access_token', $access_token );
               $session->set( 'token', $user_info );
+              warn "check";
+              warn Dumper $user_info;
+              $session->set( 'screen_name', $user_info );
+              
 #              my $fb = Facebook::Graph->new();
 #              my $user = $fb->fetch($user_info->{id});
               $c->redirect_to('/');
@@ -63,6 +73,8 @@ get '/' => sub {
     my $profile;
 
     my $screen_name = $session->get('screen_name');
+    warn "get screen_name $screen_name";
+
     if ( $session->get('access_token') ) {
         $nt->access_token( $session->get('access_token') );
         $nt->access_token_secret( $session->get('access_token_secret') );
