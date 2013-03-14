@@ -16,12 +16,23 @@ helper calc_ishiki => sub {
     my ( $self, $id ) = @_;
 };
 
+helper hello => sub {
+    my ( $self ) = shift;
+    return "hello;"
+};
+
+helper get_noun => sub {
+    my ($self,$text ) = @_;
+    
+};
+
 my $config = plugin( 'Config' => { file => "config.pl" } );
 my $nt = Net::Twitter::Lite->new(
     consumer_key    => $config->{twitter}->{consumer_key},
     consumer_secret => $config->{twitter}->{consumer_secret},
 );
 app->secret( $config->{secret} );
+
 
 plugin 'Web::Auth',
           module      => 'Twitter',
@@ -32,10 +43,8 @@ plugin 'Web::Auth',
               my $session = Plack::Session->new( $c->req->env );
               $session->set('access_token' => $access_token);
               $session->set('access_secret' => $access_secret);
-#              $session('account_info' => $account_info->{screen_name});
-              $session->set('screen_name' => $account_info->{screen_name});
-              warn "check it!";
-              warn Dumper $account_info->{screen_name};
+              $session->set('screen_name' => $account_info->{screen_name} );
+              $session->set('description' => $account_info->{description} );              
               $c->redirect_to('/');
           };
 
@@ -69,18 +78,18 @@ get '/' => sub {
     my $self = shift;
 
     my $session      = Plack::Session->new( $self->req->env );
-    my $subscription = [];
-    my $profile;
 
-    my $screen_name = $session->get('screen_name');
-    warn "get screen_name $screen_name";
-
-    if ( $session->get('access_token') ) {
+    if ( $session->get('access_token') && $session->get('access_token_secret') ) {
         $nt->access_token( $session->get('access_token') );
         $nt->access_token_secret( $session->get('access_token_secret') );
-
     }
-    $self->stash->{profile}     = $profile;
+
+    my $screen_name = $session->get('screen_name');
+    my $description = $session->get('description');
+
+    $self->stash->{hello}       = $self->hello;
+    $self->stash->{screen_name} = $screen_name;
+    $self->stash->{description} = $description;
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{ishiki}      = '';
     $self->render('index');
@@ -133,7 +142,6 @@ get '/auth/facebook' => sub {
     my $self = shift;
     $self->redirect_to('/auth/facebook/authenticate');
 };
-
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";
