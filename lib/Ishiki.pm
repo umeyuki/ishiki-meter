@@ -34,7 +34,7 @@ sub get_norn {
 
     my $ref = XMLin( $res->content );
     return $sentence unless ref $ref->{ma_result}{word_list}{word} eq 'ARRAY';
-    warn Dump $ref->{ma_result};
+
     my @result = ();
     for my $word ( @{ $ref->{ma_result}{word_list}{word} }) {
         if ( $word->{pos} eq $self->{position} ) {

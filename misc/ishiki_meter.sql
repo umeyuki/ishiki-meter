@@ -1,4 +1,4 @@
-create table keyword (
+create table keywords (
     id integer primary key autoincrement,
     name text not null,
     value integer default 5,
