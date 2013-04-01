@@ -6,6 +6,11 @@ use Facebook::Graph;
 use Plack::Builder;
 use Plack::Session;
 use Data::Dumper::Concise;
+use Config::Pit;
+use utf8;
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use Ishiki::Calculator;
 
 
 helper update_tag => sub {
@@ -13,17 +18,16 @@ helper update_tag => sub {
 };
 
 helper calc_ishiki => sub {
-    my ( $self, $id ) = @_;
-};
-
-helper hello => sub {
     my ( $self ) = shift;
-    return "hello;"
-};
-
-helper get_noun => sub {
-    my ($self,$text ) = @_;
-    
+    my $config = pit_get(
+        'e.developer.yahoo.co.jp',
+        require => {
+            app_id => 'my yahoo id',
+            secret => 'my secret id '
+        }
+    );
+    my $app_id = $config->{app_id};
+    return Ishiki->new( yahoo_appid => $app_id );
 };
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
@@ -86,39 +90,14 @@ get '/' => sub {
 
     my $screen_name = $session->get('screen_name');
     my $description = $session->get('description');
-
-    $self->stash->{hello}       = $self->hello;
+    my $ishiki = $self->helper;
+    
+    
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{description} = $description;
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{ishiki}      = '';
     $self->render('index');
-};
-
-get '/login' => sub {
-    my $self    = shift;
-    my $session = Plack::Session->new( $self->req->env );
-    my $url     = $nt->get_authorization_url(
-        callback => $self->req->url->base . '/callback' );
-    $session->set( 'token',        $nt->request_token );
-    $session->set( 'token_secret', $nt->request_token_secret );
-    $self->redirect_to($url);
-};
-
-get '/callback' => sub {
-    my $self = shift;
-    unless ( $self->req->param('denied') ) {
-        my $session = Plack::Session->new( $self->req->env );
-        $nt->request_token( $session->get('token') );
-        $nt->request_token_secret( $session->get('token_secret') );
-        my $verifier = $self->req->param('oauth_verifier');
-        my ( $access_token, $access_token_secret, $user_id, $screen_name ) =
-          $nt->request_access_token( verifier => $verifier );
-        $session->set( 'access_token',        $access_token );
-        $session->set( 'access_token_secret', $access_token_secret );
-        $session->set( 'screen_name',         $screen_name );
-    }
-    $self->redirect_to('/');
 };
 
 get '/logout' => sub {
