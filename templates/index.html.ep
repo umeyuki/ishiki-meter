@@ -4,5 +4,4 @@
 Yahooの構文解析apiを使う プロフィールの名詞を抜き出す
 <p>my name is <%= $screen_name %></p>
 <p>profile is <%= $description %></p>
-<p><%= $hello %></p>
 % }
