@@ -1,4 +1,4 @@
-package Ishiki::Calculator;
+package Ishiki::Parser;
 use strict;
 use warnings;
 use Carp;
@@ -24,7 +24,7 @@ sub new {
     return bless $self,$class;
 }
 
-sub _get_words {
+sub _parse {
     my ( $self, $sentence ) = @_;
     Carp::croak 'Sentence is needed!' unless $sentence;
 
@@ -48,7 +48,7 @@ sub _get_words {
 sub calc {
     my ( $self,$description,$keywords) = @_;
 
-    my $words = $self->_get_words($description);
+    my $words = $self->_parse($description);
     my $result = 0;
     for my $word ( @$words ){
         if ( $keywords->{$word} ) {
