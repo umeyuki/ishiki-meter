@@ -12,7 +12,10 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 use Ishiki::Parser;
 use Carp;
+use OAuth::Lite::Consumer;
 use Config::Pit;
+use JSON;
+use Encode qw/encode_utf8/;
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
 my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
@@ -21,7 +24,7 @@ my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
     consumer_key    => $config->{twitter}->{consumer_key},
     consumer_secret => $config->{twitter}->{consumer_secret},
 );
-warn Dumper $config;
+
 app->secret( $config->{secret} );
 
 helper keywords => sub {
@@ -76,8 +79,6 @@ plugin 'Web::Auth',
         my $fb = Facebook::Graph->new(
             access_token => $access_token
         );
-        warn Dumper $access_token;
-        warn Dumper $user;
         my $posts = $fb->fetch('me/posts')->{data};
 
         for my $post ( @$posts ) {
@@ -98,6 +99,54 @@ sub startup {
     my $r = $self->routes;
     $r->route('/')->via('GET')->to('index#index');
 }
+
+get '/auth/auth_twitter' => sub {
+    my $self = shift;
+
+    my $session      = Plack::Session->new( $self->req->env );                                
+    
+    my $verifier = $self->req->param('oauth_verifier');
+    my $consumer = OAuth::Lite::Consumer->new(
+        consumer_key       => $config->{twitter}->{consumer_key},
+        consumer_secret    => $config->{twitter}->{consumer_secret},
+        site               => q{http://api.twitter.com},
+        request_token_path => q{/oauth/request_token},
+        access_token_path  => q{/oauth/access_token},
+        authorize_path     => q{/oauth/authorize},
+    );
+    if (! $verifier) {
+        my $request_token = $consumer->get_request_token(
+            callback_url => $config->{twitter}->{callback_url}
+        );
+        $session->set( request_token => $request_token);
+        $self->redirect_to( $consumer->url_to_authorize(
+            token => $request_token
+        ) );
+    } else {
+        my $request_token = $session->get('request_token');
+        my $access_token = $consumer->get_access_token(
+            token    => $request_token,
+            verifier => $verifier
+        );
+        $session->remove('request_token');
+        my $credentials_res = $consumer->request(
+            method => 'GET',
+            url    => q{http://api.twitter.com/1/account/verify_credentials.json},
+            token  => $access_token,
+        );
+        my $tw = JSON->new->utf8->decode($credentials_res->decoded_content);
+        my $tl_res = $consumer->request(
+            method => 'GET',
+            url    => 'https://api.twitter.com/1.1/statuses/home_timeline.json',
+            token  => $access_token,
+        );
+        my $timeline = decode_json($tl_res->decoded_content);
+        warn Dumper encode_utf8($timeline->{text});
+        $self->stash->{screen} = $tw->{screen_name};
+
+    }
+
+};
 
 get '/' => sub {
     my $self = shift;
@@ -139,16 +188,6 @@ get '/logout' => sub {
     $self->redirect_to('/');
 };
 
-
-get '/auth/twitter' => sub {
-    my $self = shift;
-    $self->redirect_to('/auth/twitter/authenticate');
-};
-
-get '/auth/facebook' => sub {
-    my $self = shift;
-    $self->redirect_to('/auth/facebook/authenticate');
-};
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";

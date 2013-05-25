@@ -19,7 +19,7 @@
           </ul>
           % } else {
           <ul>
-            <li><a href="/auth/twitter/authenticate">Twitterログイン</a></li>
+            <li><a href="/auth/auth_twitter/">Twitterログイン</a></li>
             <li><a href="/auth/facebook/authenticate">facebookログイン</a></li>
             
           </ul>
