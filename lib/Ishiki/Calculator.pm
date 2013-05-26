@@ -31,7 +31,7 @@ sub _parse {
     my $uri = URI->new( $self->{base_url} );
     $uri->query_form( appid => $self->{appid}, sentence => $sentence);
     my $res = $self->{ua}->get($uri);
-    Carp::croak $res->status_lin if $res->is_error;
+    Carp::croak $res->status_line if $res->is_error;
 
     my $ref = XMLin( $res->content );
     return $sentence unless ref $ref->{ma_result}{word_list}{word} eq 'ARRAY';

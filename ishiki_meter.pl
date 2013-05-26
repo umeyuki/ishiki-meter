@@ -13,8 +13,8 @@ use lib "$FindBin::Bin/lib";
 use Ishiki::Parser;
 use Carp;
 use OAuth::Lite::Consumer;
-use Config::Pit;
 use JSON;
+use Redis;
 use Encode qw/encode_utf8/;
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
@@ -27,9 +27,37 @@ my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
 
 app->secret( $config->{secret} );
 
+helper redis => sub {
+    Redis->new(%{$config->{Redis}});
+};
+
 helper keywords => sub {
     my ( $self ) = shift;
+
+    #TODO use redis
+    my $keywords = {};# || $self->redis->get('KEYWORDS');;
+    if ( keys %$keywords <= 0 ) {
+        my $dbh = DBI->connect(@{$config->{DBI}});
+        $dbh->{unicode} = 1;
+        my $sql = <<SQL;
+SELECT
+    name,value
+FROM
+    keywords
+SQL
+        my $sth = $dbh->prepare($sql);
+        $sth->execute();
+        my $rows = $sth->fetchall_arrayref({});
+        for my $row ( @$rows ) {
+            $keywords->{$row->{name}} = $row->{value};
+        }
+
+#        $self->redis->rpush( 'KEYWORDS' , $_ ) for (@$keywords);
+        $sth->finish;
+        $dbh->disconnect;
+    }
     
+    $keywords;
 };
 
 helper ishiki => sub {
@@ -45,56 +73,8 @@ set session twitter profile and recently 20 tweets
 
 =cut
 
-plugin 'Web::Auth',
-    module      => 'Twitter',
-    key         => $config->{twitter}->{consumer_key},
-    secret      => $config->{twitter}->{consumer_secret},
-    on_finished => sub {
-        my ($c, $access_token, $access_secret, $user) = @_;
-        my $session = Plack::Session->new( $c->req->env );
-        $nt->access_token($access_token);
-        $nt->access_token_secret($access_token);
-
-        my $tweets = $nt->user_timeline(
-            {
-                count        => $config->{twitter}->{count},
-                screen_name  => $user->{screen_name}
-            }
-        );
-        $session->set('screen_name' => $user->{screen_name} );
-        $session->set('description' => $user->{description} );
-        $session->set('remarks'     => $tweets );
-        
-        $c->redirect_to('/');
-    };
-
-plugin 'Web::Auth',
-    module      => 'Facebook',
-    key         => $config->{facebook}->{app_id},
-    secret      => $config->{facebook}->{secret},
-    on_finished => sub {
-        my ( $c, $access_token,$user ) = @_;
-        my $session = Plack::Session->new( $c->req->env );
-        
-        my $fb = Facebook::Graph->new(
-            access_token => $access_token
-        );
-        my $posts = $fb->fetch('me/posts')->{data};
-
-        for my $post ( @$posts ) {
-            warn "message:";
-            warn $post->{message};
-        }
-        $session->set('screen_name' => $user->{name} );
-        $session->set('description' => $user->{bio} );
-        #        $session->set( 'remarks'     => $tweets );
-
-        $c->redirect_to('/');
-    };
-
 sub startup {
     my $self = shift;
-    my $session      = Plack::Session->new( $self->req->env );                                
 
     my $r = $self->routes;
     $r->route('/')->via('GET')->to('index#index');
@@ -134,16 +114,24 @@ get '/auth/auth_twitter' => sub {
             url    => q{http://api.twitter.com/1/account/verify_credentials.json},
             token  => $access_token,
         );
-        my $tw = JSON->new->utf8->decode($credentials_res->decoded_content);
+        my $user = JSON->new->utf8->decode($credentials_res->decoded_content);
         my $tl_res = $consumer->request(
             method => 'GET',
-            url    => 'https://api.twitter.com/1.1/statuses/home_timeline.json',
+            url    => 'https://api.twitter.com/1.1/statuses/user_timeline.json',
             token  => $access_token,
+            params => { count => 10 }
         );
         my $timeline = decode_json($tl_res->decoded_content);
-        warn Dumper encode_utf8($timeline->{text});
-        $self->stash->{screen} = $tw->{screen_name};
-
+        my @tweets = ();
+        for my $tweet ( @{$timeline} ) {
+            push @tweets, $tweet->{text};
+        }
+        
+        $session->set('screen_name' => $user->{name} );
+        $session->set('description' => $user->{description} );
+        $session->set( 'remarks'    => \@tweets );
+        $self->redirect_to('/');
+        
     }
 
 };
@@ -152,32 +140,18 @@ get '/' => sub {
     my $self = shift;
 
     my $session      = Plack::Session->new( $self->req->env );
-    my ($screen_name,$description,$remarks);
-
+    my ($screen_name,$description,$remarks,$ishiki);
+    
     if ($session->get('screen_name') ) {
         $screen_name = $session->get('screen_name');
         $description = $session->get('description');
         $remarks     = $session->get('remarks');
-        $self->ishiki->calc($screen_name,$description,$remarks);
+        $ishiki      = $self->ishiki->calc($remarks,$self->keywords);
     }
-
-    
-    # twitter
-    if ( $session->get('access_token') && $session->get('access_token_secret') ) {
-        $nt->access_token( $session->get('access_token') );
-        $nt->access_token_secret( $session->get('access_token_secret') );
-
-        # parse profile
-        $self->{ishiki} = $self->ishiki->calc($description);
-        
-        # parse tweets
-        $self->{ishiki} = $self->parse_tweet($screen_name);
-    }
-    
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{description} = $description;
-    $self->stash->{screen_name} = $screen_name;
-    $self->stash->{ishiki}      = $self->{ishiki};
+    $self->stash->{remarks}     = $remarks;
+    $self->stash->{ishiki}      = $ishiki;
     $self->render('index');
 };
 
