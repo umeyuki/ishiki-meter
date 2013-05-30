@@ -13,6 +13,7 @@ use lib "$FindBin::Bin/lib";
 use Ishiki::Parser;
 use Carp;
 use OAuth::Lite::Consumer;
+
 use JSON;
 use Redis;
 use Encode qw/encode_utf8/;
@@ -21,11 +22,13 @@ my $config = plugin( 'Config' => { file => "config.pl" } );
 my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
     apiurl           => 'http://api.twitter.com/1.1',
     legacy_lists_api => 0,
+
     consumer_key     => $config->{twitter}->{consumer_key},
     consumer_secret  => $config->{twitter}->{consumer_secret},
 );
 
 app->secret( $config->{secret} );
+
 
 helper redis => sub {
     Redis->new( %{ $config->{Redis} } );
@@ -101,6 +104,7 @@ sub startup {
 get '/auth/auth_twitter' => sub {
     my $self = shift;
 
+
     my $session = Plack::Session->new( $self->req->env );
 
     my $verifier = $self->req->param('oauth_verifier');
@@ -112,6 +116,7 @@ get '/auth/auth_twitter' => sub {
         access_token_path  => q{/oauth/access_token},
         authorize_path     => q{/oauth/authorize},
     );
+
     if ( not $verifier ) {
         my $request_token = $consumer->get_request_token(
             callback_url => $config->{twitter}->{callback_url} );
@@ -152,7 +157,6 @@ get '/auth/auth_twitter' => sub {
         $session->set( 'profile'     => $user->{description} );
         $session->set( 'remarks'     => \@tweets );
         $self->redirect_to('/');
-
     }
 
 };
