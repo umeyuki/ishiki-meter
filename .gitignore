@@ -1,3 +1,4 @@
+config.pl
 blib/
 .build/
 _build/
