@@ -76,8 +76,8 @@ helper pickup_words => sub {
     for my $remark ( @$remarks ) {
         for my $keyword ( @keywords ) {
             if ( $remark =~ /$keyword/ ){
-                my $font = $self->{keywords}->{$remark} * 20;
-                $remark =~ s|$keyword|<span style=\"font:20px;color:red\">$keyword</span>|;
+                my $font = $self->{keywords}->{$keyword} * 20;
+                $remark =~ s|$keyword|<span style=\"font-size:${font}px;color:red\">$keyword</span>|;
             }
         }
 
