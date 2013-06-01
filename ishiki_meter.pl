@@ -104,6 +104,11 @@ sub startup {
 get '/auth/auth_twitter' => sub {
     my $self = shift;
 
+    if ( my $denied = $self->req->param('denied') ){
+        $self->redirect_to( "/?error=access_denied" );
+        return;
+    }
+    
 
     my $session = Plack::Session->new( $self->req->env );
 
@@ -164,6 +169,10 @@ get '/auth/auth_twitter' => sub {
 get '/' => sub {
     my $self = shift;
 
+    my $error = $self->req->param('error');
+    $self->render( error => $error );
+
+    
     $self->{keywords} = $self->keywords;    
     my $session = Plack::Session->new( $self->req->env );
 

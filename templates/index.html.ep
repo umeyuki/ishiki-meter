@@ -1,6 +1,9 @@
 % layout 'default';
 % title 'Welcome';
 
+% if ( $error ) {
+
+% }
 % if ( $screen_name && $profile  ) {
 Yahooの構文解析apiを使う プロフィールの名詞を抜き出す
 <p>my name is <%= $screen_name %></p>
