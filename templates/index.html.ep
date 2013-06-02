@@ -5,25 +5,37 @@
 
 % }
 % if ( $screen_name && $profile  ) {
-<p>my name is <%= $screen_name %></p>
-<p>profile is <%= Mojo::ByteStream->new(shift @{$sentenses}) %>></p>
-<p>Your Ishiki is <%= $ishiki %></p>
-<table class="table table-striped table-hover">
+<p><%= $screen_name %>さんの意識調査</p>
+<div id="gauge" style="width:200px;height:160px"></div>
+<script>
+    var g = new JustGage({
+        id: "gauge",
+        value: <%= $ishiki %>,
+        min: 0,
+        max: 1000,
+        title: "<%= $screen_name %>さんの意識の高さ"
+      });
+</script>
+<div class="hero-unit">
+<p><%= Mojo::ByteStream->new(shift @{$sentenses}) %>></p>  
+</div>
+
+<table class="table">
   <thead>
     <tr>
-      <th>tweet</th>
+      <th>最近の発言</th>
     </tr>
   </thead>
   <tbody>
-    <tr class="info">
-      <td>
-        
-      </td>
-    </tr>
 % for my $sentense (@{$sentenses}) {
     <tr>
       <td><%= Mojo::ByteStream->new($sentense) %></td>
     </tr>
 % }
 </table>
+% } else {
+<div class="hero-unit">
+  aaaaaaaaaaaaaaaaaaaaaあああ
+</div>
+
 % }

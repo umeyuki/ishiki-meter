@@ -44,7 +44,7 @@ helper keywords => sub {
         $dbh->{sqlite_unicode} = 1;
         my $sql = <<SQL;
 SELECT
-    name,value
+    id,name,value
 FROM
     keywords
 SQL
@@ -52,7 +52,7 @@ SQL
         $sth->execute();
         my $rows = $sth->fetchall_arrayref( {} );
         for my $row (@$rows) {
-            $keywords->{ $row->{name} } = $row->{value};
+            $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value} };
         }
 
         #        $self->redis->rpush( 'KEYWORDS' , $_ ) for (@$keywords);
@@ -64,10 +64,16 @@ SQL
 };
 
 helper ishiki => sub {
-    my $self = shift;
-    my $app_id = $config->{yahoo}->{app_id};
-
     Ishiki::Calculator->new( );
+};
+
+helper page_create => sub {
+    # ページを作成 
+    
+};
+
+helper popular => sub {
+    
 };
 
 sub startup {
@@ -76,6 +82,11 @@ sub startup {
     my $r = $self->routes;
     $r->route('/')->via('GET')->to('index#index');
 }
+
+get '/:id' => sub {
+    my $self = shift;
+    $self->render_text( $self->param('id') );
+};
 
 get '/' => sub {
     my $self = shift;
@@ -116,7 +127,6 @@ get '/auth/auth_twitter' => sub {
         return;
     }
     
-
     my $session = Plack::Session->new( $self->req->env );
 
     my $verifier = $self->req->param('oauth_verifier');
@@ -164,6 +174,10 @@ get '/auth/auth_twitter' => sub {
         for my $tweet ( @{$timeline} ) {
             push @tweets, $tweet->{text};
         }
+
+        my @sentenses = ( $user->{description},@tweets );
+
+        my ( $ishiki,$processed_sentenses ) = $self->ishiki->calc( \@sentenses, $self->keywords );
 
         $session->set( 'screen_name' => $user->{name} );
         $session->set( 'profile'     => $user->{description} );

@@ -14,3 +14,26 @@ create table persons (
     updated text not null,
     deleted text
 );
+
+create table populars (
+    id integer primary key autoincrement,
+    keyword_id integer not null,
+    created text not null,
+    updated text not null,
+    deleted text
+);
+
+craete table pages  (
+    id integer primary key autoincrement,
+
+);
+
+craete table remarks (
+    id integer primary key autoincrement,
+    page_id integer,
+    kind integer,
+    text text,
+    created text not null,
+    updated text not null,
+    deleted text
+);
