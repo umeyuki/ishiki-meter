@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>意識メーター</title>
-    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.6.0/build/cssreset/cssreset-min.css">
-    <link rel="stylesheet" href="public/style.css">
+    <%= stylesheet '/css/bootstrap.min.css %>
   </head>
   <body>
     <div id="container">
@@ -32,6 +31,7 @@
       </div> <!-- #main -->
       <div id="footer">Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a></div>
     </div>
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
   </body>
 </html>
 

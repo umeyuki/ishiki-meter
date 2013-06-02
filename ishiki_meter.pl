@@ -10,7 +10,7 @@ use DBI;
 use utf8;
 use FindBin;
 use lib "$FindBin::Bin/lib";
-use Ishiki::Parser;
+use Ishiki::Calculator;
 use Carp;
 use OAuth::Lite::Consumer;
 
@@ -41,7 +41,7 @@ helper keywords => sub {
     my $keywords = {};    # || $self->redis->get('KEYWORDS');;
     if ( keys %$keywords <= 0 ) {
         my $dbh = DBI->connect( @{ $config->{DBI} } );
-        $dbh->{unicode} = 1;
+        $dbh->{sqlite_unicode} = 1;
         my $sql = <<SQL;
 SELECT
     name,value
@@ -67,32 +67,8 @@ helper ishiki => sub {
     my $self = shift;
     my $app_id = $config->{yahoo}->{app_id};
 
-    Ishiki::Parser->new( yahoo_appid => $app_id );
+    Ishiki::Calculator->new( );
 };
-
-helper pickup_words => sub {
-    my ($self,$remarks) = @_;
-
-    my @result = ();
-    my @keywords = keys %{$self->{keywords}};
-
-    for my $remark ( @$remarks ) {
-        for my $keyword ( @keywords ) {
-            if ( $remark =~ /$keyword/ ){
-                my $font = $self->{keywords}->{$keyword} * 20;
-                $remark =~ s|$keyword|<span style=\"font-size:${font}px;color:red\">$keyword</span>|;
-            }
-        }
-
-        push @result ,$remark;
-    }
-    return \@result;
-};
-
-=head2 twitter oauth
-
-
-=cut
 
 sub startup {
     my $self = shift;
@@ -100,6 +76,37 @@ sub startup {
     my $r = $self->routes;
     $r->route('/')->via('GET')->to('index#index');
 }
+
+get '/' => sub {
+    my $self = shift;
+
+    my $error = $self->req->param('error');
+    $self->render( error => $error );
+
+    $self->{keywords} = $self->keywords;    
+    my $session = Plack::Session->new( $self->req->env );
+
+    my ( $screen_name, $profile, $remarks, $ishiki,$processed_sentenses );
+    
+    if ( $session->get('screen_name') ) {
+        $screen_name = $session->get('screen_name');
+        $profile     = $session->get('profile');
+        $remarks     = $session->get('remarks');
+        
+        my @sentenses = ( $profile, @$remarks );
+        
+        my $keywords = $self->{keywords};
+        ( $ishiki,$processed_sentenses ) = $self->ishiki->calc( \@sentenses, $self->{keywords} );
+        warn Dumper $ishiki;
+        warn Dumper $processed_sentenses;
+    }
+
+    $self->stash->{screen_name} = $screen_name;
+    $self->stash->{profile}     = $profile;
+    $self->stash->{sentenses}     = $processed_sentenses;
+    $self->stash->{ishiki}      = $ishiki;
+    $self->render('index');
+};
 
 get '/auth/auth_twitter' => sub {
     my $self = shift;
@@ -166,35 +173,6 @@ get '/auth/auth_twitter' => sub {
 
 };
 
-get '/' => sub {
-    my $self = shift;
-
-    my $error = $self->req->param('error');
-    $self->render( error => $error );
-
-    
-    $self->{keywords} = $self->keywords;    
-    my $session = Plack::Session->new( $self->req->env );
-
-    my ( $screen_name, $profile, $remarks, $ishiki );
-
-    if ( $session->get('screen_name') ) {
-        $screen_name = $session->get('screen_name');
-        $profile     = $session->get('profile');
-        $remarks     = $session->get('remarks');
-        
-        my @data = ( $profile, @$remarks );
-        my $keywords = $self->{keywords};
-        warn "keyword!";
-        warn Dumper $keywords;
-        $ishiki = $self->ishiki->calc( \@data, $self->{keywords} );
-    }
-    $self->stash->{screen_name} = $screen_name;
-    $self->stash->{profile}     = $profile;
-    $self->stash->{remarks}     = $self->pickup_words($remarks);
-    $self->stash->{ishiki}      = $ishiki;
-    $self->render('index');
-};
 
 get '/logout' => sub {
     my $self    = shift;

@@ -1,15 +1,29 @@
-% layout 'default';
-% title 'Welcome';
+% layout 'wrapper';
+% title '意識メーター';
 
 % if ( $error ) {
 
 % }
 % if ( $screen_name && $profile  ) {
-Yahooの構文解析apiを使う プロフィールの名詞を抜き出す
 <p>my name is <%= $screen_name %></p>
-<p>profile is <%= $profile %></p>
+<p>profile is <%= Mojo::ByteStream->new(shift @{$sentenses}) %>></p>
 <p>Your Ishiki is <%= $ishiki %></p>
-% for my $tweet (@{$remarks}) {
-<p><%= Mojo::ByteStream->new($tweet) %></p>
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>tweet</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="info">
+      <td>
+        
+      </td>
+    </tr>
+% for my $sentense (@{$sentenses}) {
+    <tr>
+      <td><%= Mojo::ByteStream->new($sentense) %></td>
+    </tr>
 % }
+</table>
 % }
