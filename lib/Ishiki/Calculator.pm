@@ -42,23 +42,7 @@ sub calc {
         }
         push @processeds, $sentense;        
     }
-#    $self->_insert($ishiki,\@processeds);
     return $ishiki,\@processeds,\%populars;
-}
-
-sub _insert {
-    my ($self,$ishiki,$remarks) = @_;
-    $self->_ishiki_insert($ishiki);
-    $self->_remarks_insert($remarks);
-}
-
-sub _ishiki_insert {
-
-
-}
-
-sub _remarks_insert {
-
 }
 
 1;

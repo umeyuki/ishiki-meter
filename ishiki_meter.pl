@@ -38,8 +38,10 @@ helper keywords => sub {
     my ($self) = shift;
 
     #TODO use redis
-    my $keywords = {};    # || $self->redis->get('KEYWORDS');;
-    if ( keys %$keywords <= 0 ) {
+    my $keywords = eval $self->redis->get('keywords') || {};
+    warn "use redis!";
+    unless ( %$keywords ) {
+        warn "use db!";
         my $dbh = DBI->connect( @{ $config->{DBI} } );
         $dbh->{sqlite_unicode} = 1;
         my $sql = <<SQL;
@@ -54,12 +56,12 @@ SQL
         for my $row (@$rows) {
             $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value} };
         }
-
-        #        $self->redis->rpush( 'KEYWORDS' , $_ ) for (@$keywords);
+        
+        
+        $self->redis->set( 'keywords' , Dumper($keywords) );
         $sth->finish;
         $dbh->disconnect;
     }
-
     $keywords;
 };
 
@@ -177,8 +179,10 @@ get '/auth/auth_twitter' => sub {
 
         my @sentenses = ( $user->{description},@tweets );
 
-        my ( $ishiki,$processed_sentenses ) = $self->ishiki->calc( \@sentenses, $self->keywords );
-
+        my ( $ishiki,$processed_sentenses,$populars ) = $self->ishiki->calc( \@sentenses, $self->keywords );
+#        $self->create_page($ishiki,$processed_sentenses);
+#        $self->update_populars($populars);
+        
         $session->set( 'screen_name' => $user->{name} );
         $session->set( 'profile'     => $user->{description} );
         $session->set( 'remarks'     => \@tweets );

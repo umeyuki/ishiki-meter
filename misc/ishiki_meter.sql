@@ -25,13 +25,17 @@ create table populars (
 
 craete table pages  (
     id integer primary key autoincrement,
-
+    ishiki integer not null,
+    created text not null,
+    updated text not null,
+    deleted text
 );
 
-craete table remarks (
+craete table ishiki_details (
     id integer primary key autoincrement,
     page_id integer,
-    kind integer,
+    kind integer,    
+    sort integer,
     text text,
     created text not null,
     updated text not null,
