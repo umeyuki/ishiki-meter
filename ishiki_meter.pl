@@ -13,6 +13,8 @@ use lib "$FindBin::Bin/lib";
 use Ishiki::Calculator;
 use Carp;
 use OAuth::Lite::Consumer;
+use URI;
+use Digest::SHA;
 
 use JSON;
 use Redis;
@@ -39,9 +41,7 @@ helper keywords => sub {
 
     #TODO use redis
     my $keywords = eval $self->redis->get('keywords') || {};
-    warn "use redis!";
     unless ( %$keywords ) {
-        warn "use db!";
         my $dbh = DBI->connect( @{ $config->{DBI} } );
         $dbh->{sqlite_unicode} = 1;
         my $sql = <<SQL;
@@ -56,7 +56,6 @@ SQL
         for my $row (@$rows) {
             $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value} };
         }
-        
         
         $self->redis->set( 'keywords' , Dumper($keywords) );
         $sth->finish;
@@ -99,7 +98,7 @@ get '/' => sub {
     $self->{keywords} = $self->keywords;    
     my $session = Plack::Session->new( $self->req->env );
 
-    my ( $screen_name, $profile, $remarks, $ishiki,$processed_sentenses );
+    my ( $screen_name, $profile, $remarks, $ishiki,$processed_sentenses,$used_keywords );
     
     if ( $session->get('screen_name') ) {
         $screen_name = $session->get('screen_name');
@@ -109,14 +108,14 @@ get '/' => sub {
         my @sentenses = ( $profile, @$remarks );
         
         my $keywords = $self->{keywords};
-        ( $ishiki,$processed_sentenses ) = $self->ishiki->calc( \@sentenses, $self->{keywords} );
-        warn Dumper $ishiki;
+        ( $ishiki,$processed_sentenses,$used_keywords ) = $self->ishiki->calc( \@sentenses, $self->{keywords} );
         warn Dumper $processed_sentenses;
     }
 
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{profile}     = $profile;
-    $self->stash->{sentenses}     = $processed_sentenses;
+    $self->stash->{sentenses}   = $processed_sentenses;
+    $self->stash->{keywords}   = $used_keywords;
     $self->stash->{ishiki}      = $ishiki;
     $self->render('index');
 };
@@ -190,6 +189,76 @@ get '/auth/auth_twitter' => sub {
     }
 
 };
+
+get '/auth/auth_fb/' => sub {
+    my $self = shift;
+
+    my $session = Plack::Session->new( $self->req->env );
+    
+    my $req = $self->req;
+    my $code = $req->param('code');
+    my $error = $req->param('error');
+    if ( $error ) {
+        if ( 'access_denied' eq $error ) {
+            $self->redirect_to( "/?error=$error");
+            return;
+        }
+        else {
+            return;
+        }
+    } elsif ( ! $code ) {
+        my $fb_state = Digest::SHA::sha1_hex( Digest::SHA::sha1_hex(time(), {}, rand(),$$));
+        $session->set('fb_s',$fb_state);
+        my $uri = URI->new( 'https://www.facebook.com/dialog/oauth');
+        $uri->query_form(
+            client_id => $self->config->{Facebook}->{client_id},
+            redirect_uri => 'http://localhost:5000/auth/auth_fb',
+            scope => '',
+            state => $fb_state
+        );
+        $self->redirect_to( $uri );
+    } elsif ( $code ) {
+        my $state = $req->param('state');
+        my $expected_state = $session->get('fb_s');
+        if ( $state ne $expected_state) {
+            die "Something wrong";
+        }
+        my $uri = URI->new( 'https://graph.facebook.com/oauth/access_token' );
+        $uri->query_form(
+            client_id => $self->config->{Facebook}->{client_id},
+            client_secret => $self->config->{Facebook}->{client_secret},            
+            redirect_uri => 'http://localhost:5000/auth/auth_fb',
+            code => $code
+        );
+
+        my (undef, $h_code, undef, $h_hdrs, $h_body );
+
+        for (1..5) {
+            eval {
+                (undef, $h_code, undef, $h_hdrs, $h_body ) = $self->furl->get($uri);
+            };
+            last unless $@;
+            last if $h_code eq 200;
+            select(undef,undef,undef,rand());
+        }
+
+        if ( $h_code ne 200 ) {
+            die "HTTP request to fetch access token failed: $h_code: $h_body";
+        }
+        my $res = URI->new("?$h_body");
+        my %q = $res->query_form;
+        $uri = URI->new('https://graph.facebook.com/me');
+        $uri->query_form(
+            access_token => $q{access_token}
+        );
+        (undef, $h_code, undef, $h_hdrs, $h_body) = $self->furl->get($uri);
+        ### $fb
+    } else {
+        die;
+    }
+
+};
+
 
 
 get '/logout' => sub {

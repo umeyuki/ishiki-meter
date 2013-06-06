@@ -28,21 +28,20 @@ sub calc {
     my $ishiki = 0;
     my @processeds = ();
     my %populars = ();
+    my %used = ();
     for my $sentense ( @$sentenses ){
         for my $keyword ( keys %{$keywords} ) {
             if ( $sentense =~ /$keyword/i ) {
                 my $id    = $keywords->{$keyword}->{id};
-                $populars{$id}++;
                 my $value = $keywords->{$keyword}->{value};
+                $used{$keyword} = $value;
+                $populars{$id}++;
                 $ishiki += $value;
-                
-                my $font_size = $value * 20;
-                $sentense =~ s|$keyword|<span style=\"font-size:${font_size}px;color:red\">$keyword</span>|i;
             }
         }
         push @processeds, $sentense;        
     }
-    return $ishiki,\@processeds,\%populars;
+    return $ishiki,\@processeds,\%used;
 }
 
 1;
