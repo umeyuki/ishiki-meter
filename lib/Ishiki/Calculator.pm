@@ -39,9 +39,8 @@ sub calc {
                 $ishiki += $value;
             }
         }
-        push @processeds, $sentense;        
     }
-    return $ishiki,\@processeds,\%used;
+    return $ishiki,\%used,\%populars;
 }
 
 1;

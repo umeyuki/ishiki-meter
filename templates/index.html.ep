@@ -6,101 +6,30 @@
 % }
 % if ( $screen_name && $profile  ) {
 <p><%= $screen_name %>さんの意識調査</p>
-<div id="gauge" style="width:200px;height:160px"></div>
+<div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
 <script>
     var g = new JustGage({
         id: "gauge",
         value: <%= $ishiki %>,
         min: 0,
         max: 1000,
-        title: "<%= $screen_name %>さんの意識の高さ"
+        title: "意識の高さ"
       });
 </script>
 
 
-<h1>意識の高いキーワード</h1>
+<p>意識の高い発言</p>
 <div class="hero-unit">
-  <ul class="tagSearch01">
+  <ul class="tag01">
 % for my $keyword (keys $keywords) {
-<li class="tagRank<%= $keywords->{$keyword} + int(rand(10)) %>"><a href="/tag/100km" title="aaaa"><%= $keyword %></a></li>
+<li class="rank<%= $keywords->{$keyword} + int(rand(10)) %>"><a href="https://twitter.com/search?q=<%= $keyword %>" ><%= $keyword %></a></li>
 % }
   </ul>
 </div>
 
-<div class="hero-unit">
-<ul class="tagSearch01">
-<li class="tagRank10"><a href="/tag/100km" title="タグ「100km」の一覧">100km</a></li>
-<li class="tagRank10"><a href="/tag/2column" title="タグ「2column」の一覧">2column</a></li>
-<li class="tagRank9"><a href="/tag/background" title="タグ「background」の一覧">background</a></li>
-<li class="tagRank4"><a href="/tag/beginner" title="タグ「beginner」の一覧">beginner</a></li>
-<li class="tagRank9"><a href="/tag/body" title="タグ「body」の一覧">body</a></li>
-<li class="tagRank10"><a href="/tag/class" title="タグ「class」の一覧">class</a></li>
-<li class="tagRank10"><a href="/tag/clearfix" title="タグ「clearfix」の一覧">clearfix</a></li>
-<li class="tagRank1"><a href="/tag/codingcontest" title="タグ「codingcontest」の一覧">codingcontest</a></li>
-<li class="tagRank10"><a href="/tag/ddtt" title="タグ「ddtt」の一覧">ddtt</a></li>
-<li class="tagRank10"><a href="/tag/default" title="タグ「default」の一覧">default</a></li>
-<li class="tagRank10"><a href="/tag/demo" title="タグ「demo」の一覧">demo</a></li>
-<li class="tagRank10"><a href="/tag/design" title="タグ「design」の一覧">design</a></li>
-<li class="tagRank5"><a href="/tag/digiper" title="タグ「digiper」の一覧">digiper</a></li>
-<li class="tagRank3"><a href="/tag/download" title="タグ「download」の一覧">download</a></li>
-<li class="tagRank9"><a href="/tag/dreamweaver" title="タグ「dreamweaver」の一覧">dreamweaver</a></li>
-<li class="tagRank10"><a href="/tag/firefox2" title="タグ「firefox2」の一覧">firefox2</a></li>
-<li class="tagRank10"><a href="/tag/flash" title="タグ「flash」の一覧">flash</a></li>
-<li class="tagRank9"><a href="/tag/footer" title="タグ「footer」の一覧">footer</a></li>
-<li class="tagRank10"><a href="/tag/hack" title="タグ「hack」の一覧">hack</a></li>
-<li class="tagRank10"><a href="/tag/happylife" title="タグ「happylife」の一覧">happylife</a></li>
-<li class="tagRank10"><a href="/tag/header" title="タグ「header」の一覧">header</a></li>
-<li class="tagRank10"><a href="/tag/hidemaru" title="タグ「hidemaru」の一覧">hidemaru</a></li>
-<li class="tagRank5"><a href="/tag/id" title="タグ「id」の一覧">id</a></li>
-<li class="tagRank9"><a href="/tag/iddy" title="タグ「iddy」の一覧">iddy</a></li>
-<li class="tagRank5"><a href="/tag/ie6" title="タグ「ie6」の一覧">ie6</a></li>
-<li class="tagRank7"><a href="/tag/ie7" title="タグ「ie7」の一覧">ie7</a></li>
-<li class="tagRank7"><a href="/tag/javascript" title="タグ「javascript」の一覧">javascript</a></li>
-<li class="tagRank3"><a href="/tag/jquery" title="タグ「jquery」の一覧">jquery</a></li>
-<li class="tagRank10"><a href="/tag/keyword" title="タグ「keyword」の一覧">keyword</a></li>
-<li class="tagRank6"><a href="/tag/line-height" title="タグ「line-height」の一覧">line-height</a></li>
-<li class="tagRank8"><a href="/tag/margin" title="タグ「margin」の一覧">margin</a></li>
-<li class="tagRank7"><a href="/tag/movabletype" title="タグ「movabletype」の一覧">movabletype</a></li>
-<li class="tagRank10"><a href="/tag/naming" title="タグ「naming」の一覧">naming</a></li>
-<li class="tagRank9"><a href="/tag/opera9" title="タグ「opera9」の一覧">opera9</a></li>
-<li class="tagRank10"><a href="/tag/overflow" title="タグ「overflow」の一覧">overflow</a></li>
-<li class="tagRank4"><a href="/tag/padding" title="タグ「padding」の一覧">padding</a></li>
-<li class="tagRank10"><a href="/tag/plugin" title="タグ「plugin」の一覧">plugin</a></li>
-<li class="tagRank7"><a href="/tag/position" title="タグ「position」の一覧">position</a></li>
-<li class="tagRank10"><a href="/tag/property" title="タグ「property」の一覧">property</a></li>
-<li class="tagRank9"><a href="/tag/renewal" title="タグ「renewal」の一覧">renewal</a></li>
-<li class="tagRank10"><a href="/tag/safari3" title="タグ「safari3」の一覧">safari3</a></li>
-<li class="tagRank2"><a href="/tag/sample" title="タグ「sample」の一覧">sample</a></li>
-<li class="tagRank7"><a href="/tag/soft" title="タグ「soft」の一覧">soft</a></li>
-<li class="tagRank9"><a href="/tag/sqlife" title="タグ「sqlife」の一覧">sqlife</a></li>
-<li class="tagRank10"><a href="/tag/tab" title="タグ「tab」の一覧">tab</a></li>
-<li class="tagRank2"><a href="/tag/tagassist" title="タグ「tagassist」の一覧">tagassist</a></li>
-<li class="tagRank7"><a href="/tag/template" title="タグ「template」の一覧">template</a></li>
-<li class="tagRank10"><a href="/tag/topicPath" title="タグ「topicPath」の一覧">topicPath</a></li>
-<li class="tagRank10"><a href="/tag/vertical-align" title="タグ「vertical-align」の一覧">vertical-align</a></li>
-<li class="tagRank10"><a href="/tag/yuga" title="タグ「yuga」の一覧">yuga</a></li>
-</ul>
-
-
-<p><%= Mojo::ByteStream->new(shift @{$sentenses}) %>></p>  
-</div>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>最近の発言</th>
-    </tr>
-  </thead>
-  <tbody>
-% for my $keyword (keys $keywords) {
-    <tr>
-      <td><%= $keyword %></td>
-    </tr>
-% }
-</table>
 % } else {
 <div class="hero-unit">
-  aaaaaaaaaaaaaaaaaaaaaあああ
+  意識メーターの説明
 </div>
 
 % }

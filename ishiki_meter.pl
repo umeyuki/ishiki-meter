@@ -84,11 +84,6 @@ sub startup {
     $r->route('/')->via('GET')->to('index#index');
 }
 
-get '/:id' => sub {
-    my $self = shift;
-    $self->render_text( $self->param('id') );
-};
-
 get '/' => sub {
     my $self = shift;
 
@@ -98,24 +93,20 @@ get '/' => sub {
     $self->{keywords} = $self->keywords;    
     my $session = Plack::Session->new( $self->req->env );
 
-    my ( $screen_name, $profile, $remarks, $ishiki,$processed_sentenses,$used_keywords );
+    my ( $screen_name, $profile, $ishiki, $used_keywords );
     
     if ( $session->get('screen_name') ) {
-        $screen_name = $session->get('screen_name');
-        $profile     = $session->get('profile');
-        $remarks     = $session->get('remarks');
-        
-        my @sentenses = ( $profile, @$remarks );
-        
-        my $keywords = $self->{keywords};
-        ( $ishiki,$processed_sentenses,$used_keywords ) = $self->ishiki->calc( \@sentenses, $self->{keywords} );
-        warn Dumper $processed_sentenses;
+        $screen_name   = $session->get('screen_name');
+        $profile       = $session->get('profile');        
+        $ishiki        = $session->get('ishiki');
+        $used_keywords = $session->get('used_keywords');        
     }
-
+    warn Dumper $ishiki;
+    warn "hogehoge";
+    warn Dumper $used_keywords;
     $self->stash->{screen_name} = $screen_name;
     $self->stash->{profile}     = $profile;
-    $self->stash->{sentenses}   = $processed_sentenses;
-    $self->stash->{keywords}   = $used_keywords;
+    $self->stash->{keywords}    = $used_keywords;
     $self->stash->{ishiki}      = $ishiki;
     $self->render('index');
 };
@@ -176,16 +167,21 @@ get '/auth/auth_twitter' => sub {
             push @tweets, $tweet->{text};
         }
 
-        my @sentenses = ( $user->{description},@tweets );
+        my $profile = $user->{description};
+        my @sentenses = ( $profile,@tweets );
 
-        my ( $ishiki,$processed_sentenses,$populars ) = $self->ishiki->calc( \@sentenses, $self->keywords );
+        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@sentenses, $self->keywords );
 #        $self->create_page($ishiki,$processed_sentenses);
-#        $self->update_populars($populars);
+#        $self->update_populars($populars); use redis
         
         $session->set( 'screen_name' => $user->{name} );
-        $session->set( 'profile'     => $user->{description} );
-        $session->set( 'remarks'     => \@tweets );
+        $session->set( 'profile' => $profile );
+        $session->set( 'ishiki'      => $ishiki );
+        $session->set( 'used_keywords'    => $used_keywords );
+#        my $page_id = $self->create($ishiki,);
+#        $self->redirect_to('/' . $page_id);
         $self->redirect_to('/');
+         
     }
 
 };
@@ -258,8 +254,6 @@ get '/auth/auth_fb/' => sub {
     }
 
 };
-
-
 
 get '/logout' => sub {
     my $self    = shift;
