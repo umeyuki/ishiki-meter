@@ -4,8 +4,8 @@
 % if ( $error ) {
 
 % }
-% if ( $screen_name && $profile  ) {
-<p><%= $screen_name %>さんの意識調査</p>
+% if ( keys %{$user} > 0 ) {
+<p><img src="<%=  $user->{profile_image_url} %>"/><%= $user->{name} %>さんの意識調査</p>
 <div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
 <script>
     var g = new JustGage({
