@@ -13,7 +13,6 @@ requires 'Mojolicious::Plugin::Web::Auth';
 requires 'OAuth::Lite::Consumer';
 requires 'LWP::Protocol::Net::Curl';
 requires 'Data::Dumper::Concise';
-requires 'Facebook::Graph';
 requires 'YAML::Tiny::Color';
 requires 'DBD::SQLite';
 requires 'XML::Simple';

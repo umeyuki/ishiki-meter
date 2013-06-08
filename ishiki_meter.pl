@@ -1,8 +1,6 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 use LWP::Protocol::Net::Curl;
-use Net::Twitter::Lite::WithAPIv1_1;
-use Facebook::Graph;
 use Plack::Builder;
 use Plack::Session;
 use Data::Dumper::Concise;
