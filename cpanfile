@@ -1,5 +1,6 @@
 #!perl
 
+
 requires 'AnyEvent::HTTP::LWP::UserAgent';
 requires 'Plack';
 requires 'Plack::Builder';
@@ -11,8 +12,6 @@ requires 'Mojolicious';
 requires 'Mojolicious::Plugin::Web::Auth';
 requires 'OAuth::Lite::Consumer';
 requires 'LWP::Protocol::Net::Curl';
-requires 'Net::Twitter::Lite';
-requires 'Net::Twitter::Lite::WithAPIv1_1';
 requires 'Data::Dumper::Concise';
 requires 'Facebook::Graph';
 requires 'YAML::Tiny::Color';
