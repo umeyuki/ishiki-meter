@@ -5,6 +5,7 @@ use Carp;
 use URI;
 use LWP::UserAgent;
 use Encode;
+use JSON;
 use utf8;
 use YAML::Tiny::Color;
 
