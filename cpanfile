@@ -7,7 +7,6 @@ requires 'Plack::Builder';
 requires 'Plack::Session';
 requires 'Plack::Middleware::Session';
 requires 'Furl';
-requires 'Compress::Raw::Zlib';
 requires 'Mojolicious';
 requires 'OAuth::Lite::Consumer';
 requires 'LWP::Protocol::Net::Curl';
