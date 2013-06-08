@@ -16,3 +16,4 @@ requires 'XML::Parser';
 requires 'Config::Pit';
 requires 'Redis';
 requires 'Starman';
+requires 'LWP::Protocol::https';
