@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>意識メーター</title>
+    <%= stylesheet '/css/bootstrap.min.css' %>
+    <%= stylesheet '/css/bootstrap-responsive.min.css' %>
+    <%= stylesheet '/css/tag.css' %>
+    <%= javascript '/js/raphael.2.1.0.min.js' %>
+    <%= javascript '/js/justgage.1.0.1.min.js' %>    
+  </head>
+  <body>
+    <div class="container">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <a href="" class="brand">意識メーターβ</a>
+          <ul class="nav">
+            <li class="active">
+              <a href="">HOME</a>
+            </li>
+            <li>
+              <a href="/about/">意識メーターとは?</a>
+            </li>
+            <li>
+              <a href="/how/">意識を高くする方法</a>
+            </li>
+          </ul>
+          <ul class="nav pull-right">
+            % if ( keys %{$user} > 0 ) {             
+            <li>
+              <a href="/logout">
+                ログアウト
+              </a>
+            </li>
+            % } else {
+            <li class="dropdown">
+              <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                意識の高さを調べる
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="/auth/auth_twitter/">Twitterログイン</a>
+                </li>
+                <li>
+                  <a href="/auth/auth_fb">facebookログイン</a>
+                </li>
+              </ul>
+            </li>
+            % }
+          </ul>
+        </div> <!-- .navbar-inner -->
+      </div> <!-- navbar -->
+      <div class="row">
+        <div id="contents" class="span8">
+          <%= content %>
+        </div> <!-- #content -->
+        <div id="sidebar" class="span4">
+          <h3>意識ランキング</h3>
+          <ul>
+            <ol>1.@umeyuki:142130</ol>
+            <ol>2.@ozonosho:133120</ol>
+            <ol>3.@sonocomiso:100100</ol>
+            <ol>4.@eucharis4413:4300</ol>
+          </ul>
+        </div> <!-- #sidebar -->
+      </div> <!-- .row -->
+      <div id="footer">Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a>
+      </div> <!-- #fotter -->
+    </div> <!-- .container -->
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+    <%= javascript '/js/bootstrap.min.js' %>
+  </body>
+</html>
+
+
