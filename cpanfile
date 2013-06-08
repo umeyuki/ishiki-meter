@@ -9,7 +9,6 @@ requires 'Plack::Middleware::Session';
 requires 'Furl';
 requires 'Compress::Raw::Zlib';
 requires 'Mojolicious';
-requires 'Mojolicious::Plugin::Web::Auth';
 requires 'OAuth::Lite::Consumer';
 requires 'LWP::Protocol::Net::Curl';
 requires 'Data::Dumper::Concise';
