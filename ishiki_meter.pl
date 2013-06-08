@@ -19,13 +19,6 @@ use Redis;
 use Encode qw/encode_utf8/;
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
-my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
-    apiurl           => 'http://api.twitter.com/1.1',
-    legacy_lists_api => 0,
-
-    consumer_key     => $config->{twitter}->{consumer_key},
-    consumer_secret  => $config->{twitter}->{consumer_secret},
-);
 
 app->secret( $config->{secret} );
 
