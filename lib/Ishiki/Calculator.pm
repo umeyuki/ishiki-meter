@@ -4,7 +4,6 @@ use warnings;
 use Carp;
 use URI;
 use LWP::UserAgent;
-use XML::Simple;
 use Encode;
 use utf8;
 use YAML::Tiny::Color;

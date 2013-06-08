@@ -1,6 +1,5 @@
 #!perl
 
-
 requires 'Plack';
 requires 'Plack::Builder';
 requires 'Plack::Session';
