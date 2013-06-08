@@ -42,6 +42,11 @@ helper furl => sub {
     Furl::HTTP->new;
 };
 
+helper json => sub {
+    my $self = shift;
+    JSON->new;
+};
+
 helper keywords => sub {
     my ($self) = shift;
 
@@ -74,6 +79,8 @@ helper ishiki => sub {
     Ishiki::Calculator->new( );
 };
 
+
+
 helper page_create => sub {
     # ページを作成 
     
@@ -101,7 +108,7 @@ get '/' => sub {
 
     my ( $screen_name, $user, $profile, $ishiki, $used_keywords );
     
-    if ( $session->get('screen_name') ) {
+    if ( keys %{$session->get('user')} > 0 ) {
         $user          = $session->get('user');
         $screen_name   = $session->get('screen_name');
         $profile       = $session->get('profile');        
@@ -111,6 +118,7 @@ get '/' => sub {
     warn Dumper $ishiki;
     warn "hogehoge";
     warn Dumper $used_keywords;
+
     $self->stash->{user}        = $user;
     $self->stash->{keywords}    = $used_keywords;
     $self->stash->{ishiki}      = $ishiki;
@@ -159,7 +167,7 @@ get '/auth/auth_twitter' => sub {
             url => q{http://api.twitter.com/1/account/verify_credentials.json},
             token => $access_token,
         );
-        my $user = JSON->new->utf8->decode( $credentials_res->decoded_content );
+        my $user = $self->json->utf8->decode( $credentials_res->decoded_content );
         my $tl_res = $consumer->request(
             method => 'GET',
             url    => 'https://api.twitter.com/1.1/statuses/user_timeline.json',
@@ -179,7 +187,6 @@ get '/auth/auth_twitter' => sub {
         my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@sentenses, $self->keywords );
 #        $self->create_page($ishiki,$processed_sentenses);
 #        $self->update_populars($populars); use redis
-
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
         $session->set( 'used_keywords'    => $used_keywords );
@@ -211,7 +218,7 @@ get '/auth/auth_fb' => sub {
         $uri->query_form(
             client_id => $self->config->{facebook}->{client_id},
             redirect_uri => 'http://localhost:5000/auth/auth_fb',
-            scope => 'email',
+            scope => 'read_stream',
             state => $fb_state
         );
         $self->redirect_to( $uri );
@@ -247,12 +254,13 @@ get '/auth/auth_fb' => sub {
         }
         my $res = URI->new("?$h_body");
         my %q = $res->query_form;
-        $uri = URI->new('https://graph.facebook.com/me');
+        $uri = URI->new('https://graph.facebook.com/me/home');
         $uri->query_form(
             access_token => $q{access_token}
         );
         (undef, $h_code, undef, $h_hdrs, $h_body) = $self->furl->get($uri);
-        
+        my $fb = $self->json->decode($h_body);
+        warn Dumper $fb;
     } else {
         die;
     }

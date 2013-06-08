@@ -4,6 +4,7 @@
 % if ( $error ) {
 
 % }
+
 % if ( keys %{$user} > 0 ) {
 <p><img src="<%=  $user->{profile_image_url} %>"/><%= $user->{name} %>さんの意識調査</p>
 <div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
