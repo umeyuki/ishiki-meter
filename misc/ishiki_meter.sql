@@ -23,7 +23,7 @@ create table populars (
     deleted text
 );
 
-craete table pages  (
+create table pages  (
     id integer primary key autoincrement,
     ishiki integer not null,
     created text not null,
@@ -31,7 +31,7 @@ craete table pages  (
     deleted text
 );
 
-craete table ishiki_details (
+create table ishiki_details (
     id integer primary key autoincrement,
     page_id integer,
     kind integer,    
