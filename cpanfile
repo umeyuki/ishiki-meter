@@ -20,3 +20,4 @@ requires 'DBD::SQLite';
 requires 'XML::Simple';
 requires 'Config::Pit';
 requires 'Redis';
+requires 'Starman';

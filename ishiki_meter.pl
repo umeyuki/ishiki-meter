@@ -108,10 +108,8 @@ get '/' => sub {
 
     my ( $screen_name, $user, $profile, $ishiki, $used_keywords );
     
-    if ( keys %{$session->get('user')} > 0 ) {
+    if ( $session->get('user') && keys %{$session->get('user')} > 0 ) {
         $user          = $session->get('user');
-        $screen_name   = $session->get('screen_name');
-        $profile       = $session->get('profile');        
         $ishiki        = $session->get('ishiki');
         $used_keywords = $session->get('used_keywords');        
     }
