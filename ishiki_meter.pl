@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
-use LWP::Protocol::Net::Curl;
 use Plack::Builder;
 use Plack::Session;
 use Data::Dumper::Concise;
