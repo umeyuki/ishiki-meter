@@ -11,7 +11,7 @@ requires 'OAuth::Lite::Consumer';
 requires 'Data::Dumper::Concise';
 requires 'YAML::Tiny::Color';
 requires 'DBD::SQLite';
-requires 'XML::Simple';
+requires 'XML::Parser';
 requires 'Config::Pit';
 requires 'Redis';
 requires 'Starman';
