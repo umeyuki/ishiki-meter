@@ -1,29 +1,29 @@
 #!/usr/bin/env perl
+
+use utf8;
+use Carp;
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use Ishiki::Calculator;
+
 use Mojolicious::Lite;
 use Plack::Builder;
 use Plack::Session;
 use Data::Dumper::Concise;
 use DBI;
 use DBIx::TransactionManager;
-use utf8;
-use FindBin;
-use lib "$FindBin::Bin/lib";
-use Ishiki::Calculator;
-use Carp;
 use OAuth::Lite::Consumer;
 use URI;
 use Digest::SHA;
 use Furl;
-
-
 use JSON;
 use Redis;
+use Try::Tiny;
 use Encode qw/encode_utf8/;
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
 
 app->secret( $config->{secret} );
-
 
 helper redis => sub {
     Redis->new( %{ $config->{Redis} } );
@@ -97,10 +97,58 @@ SQL
     $keywords;
 };
 
-
+#TODO use helper
 helper ishiki => sub {
     Ishiki::Calculator->new( );
 };
+
+helper process => sub {
+    my ($self,$user,$authenticated_by,$ishiki,$used_keywords) = @_;
+
+    try {
+        my $tm = DBIx::TransactionManager->new( $self->dbh );
+        {
+            my $txn = $tm->txn_scope;
+            my $user_id =
+                $self->create_user( $user, $authenticated_by ) || $self->user_id;
+            $self->create_page( $user_id, $ishiki, $used_keywords );
+            $txn->commit;
+        }
+        # popular keyword ranking
+        $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
+    } catch {
+        warn "caught error: $_";
+    }
+};
+
+helper user_id => sub {
+    my ( $self, $authenticated_by, $remote_id ) = @_;
+
+    my $user_id;
+    my $sql = <<SQL;
+SELECT
+  id
+FROM
+  users
+WHERE
+  authenticated_by = ? AND
+  remote_id        = ?
+SQL
+    
+    my $sth = $self->dbh->prepare($sql);
+    $sth->bind_param(1,$authenticated_by);
+    $sth->bind_param(2,$remote_id);
+    $sth->execute or croak $sth->errstr;
+    my $rows = $sth->fetchall_arrayref({});
+    # FIXME online
+    for my $row ( @$rows ) {
+        $user_id = $row->{id};
+    }
+    
+    croak 'Select user error!' unless $user_id;
+    $user_id;
+};
+   
 
 helper create_user => sub {
     my ($self,$user,$authenticated_by) = @_;
@@ -110,16 +158,16 @@ helper create_user => sub {
     my $sql = <<SQL;
 INSERT OR IGNORE
 INTO
-  users(authenticated_by,remote_id,name,profile_image_url,created,updated)
+  users(authenticated_by,remote_id,name,profile_image_url,)
 VALUES
-  (?,?,?,?,?)
+  (?,?,?,?)
 SQL
     my $sth =$self->dbh->prepare($sql);
     $sth->bind_param(1,$authenticated_by);
     $sth->bind_param(2,$user->{id}); 
     $sth->bind_param(3,$user->{name}); 
     $sth->bind_param(4,$user->{profile_image_url});
-    $sth->execute;
+    $sth->execute or croak $sth->errstr;
     $sth->finish;
     $self->dbh->sqlite_last_insert_rowid()
 ;
@@ -128,13 +176,11 @@ helper create_page => sub {
     my ($self,$user_id,$ishiki,$used_keywords) = @_;
 
     # pagesを作成
-    # ishiki int, keywords_html text
-    #
 
     # 表示用htmlを作成
     my @html;
     my $base_html = <<HTML;
-<li class="rank"><a href="https://twitter.com/search?q=%s" >%s</a></li>
+<li class="rank%d"><a href="https://twitter.com/search?q=%s" >%s</a></li>
 HTML
     for my $keyword ( @{$used_keywords} ){
         push @html,sprintf($base_html,$used_keywords->{$keyword},$keyword,$keyword);
@@ -151,7 +197,7 @@ SQL
     $sth->bind_param(1,$user_id);
     $sth->bind_param(2,$ishiki);
     $sth->bind_param(3,@html);
-    $sth->execute;
+    $sth->execute or croak $sth->errstr;
     $sth->finish;
 };
 
@@ -160,48 +206,34 @@ helper show_page => sub {
 
     my $sql = <<SQL;
 SELECT
-  user_name,authenticated_by,remort_id
+  users.name AS name ,
+  users.profile_image_url AS image_url,
+  pages.ishiki AS ishiki,
+  pages.html AS html
 FROM
   pages
+INNER JOIN
+  users ON pages.user_id = users.id
 WHERE
-
-
+  pages.id = ?
 SQL
-        
 
+    my $sth = $self->dbh->prepare($sql);
+    $sth->bind_param(1,$page_id);
+    $sth->execute or croak $sth->errstr;
+    $sth->finish;
+    my %result = ();
+    my $rows = $sth->fetchall_arrayref( {} );
+    for my $row ( @$rows ) {
+        %result = (
+            name => $row->{name},
+            profile_image_url  => $row->{image_url},
+            ishiki             => $row->{ishiki},
+            html               => $row->{html}
+        );
+    }
+    \%result;
 };
-
-helper show_keywords => sub {
-    my ($self, $page_id) = @_;
-
-    my $page_keywords = eval $self->redis->get('page_keywords' . $page_id ) || [];
-
-    unless ( @$page_keywords > 0 ) {
-        # redisになければsqlite3から取得
-        my $sql = <<SQL;
-SELECT
-  keyword_id
-FROM
-  page_keywords
-WHERE
-  page_id = ?;
-SQL
-        my $sth = $self->dbh->prepare($sql);
-        $sth->bind_param(1,$page_id);
-        $sth->execute();
-
-        my $keywords = $self->{keywords};
-        my $rows = $sth->fetchall_arrayref({});
-
-        my $keyword_map = $self->keyword_map;
-        for my $row ( @$rows ) {
-            push @$page_keywords, $keyword_map->{$row->{keyword_id}};
-        }
-        $self->redis->set( 'page_keywords_' . $page_id  , Dumper($page_keywords) );
-    }    
-    \$page_keywords;
-};
-
 
 sub startup {
     my $self = shift;
@@ -292,15 +324,12 @@ get '/auth/auth_twitter' => sub {
         my $profile = $user->{description};
         my @messages = ( $profile,@tweets );
 
-        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
-        my $tm = DBIx::TransactionManager->new($self->dbh);↲        
-        #       $self->create_user($user,'twitter');
-        #       $self->create_page($user,$ishiki,$used_keywords);
+        my ( $ishiki,$used_keywords ) = $self->ishiki->calc( \@messages, $self->keywords );
+        $self->process($user,'twitter',$ishiki,$used_keywords);
+#           $self->create_page($user,$ishiki,$used_keywords);
         
 #        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
         
-#        $self->popular_keyword($used_keywords);
-#        $self->update_populars($populars); use redis
         
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
@@ -401,8 +430,8 @@ get '/auth/auth_fb' => sub {
         }
         push @messages,$user->{profile};
         my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
-#        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
-#        $self->popular_keyword($used_keywords);
+#       $self->process($user,$ishiki,$used_keywords);
+        #        $self->popular_keyword($used_keywords);
 #        $self->update_populars($populars); use redis
         
         $session->set( 'user'        => $user );

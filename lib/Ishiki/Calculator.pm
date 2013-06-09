@@ -34,12 +34,11 @@ sub calc {
                 my $id    = $keywords->{$keyword}->{id};
                 my $value = $keywords->{$keyword}->{value};
                 $used{$keyword} = $value;
-                $populars{$id}++;
                 $ishiki += $value;
             }
         }
     }
-    return $ishiki,\%used,\%populars;
+    return $ishiki,\%used;
 }
 
 1;
