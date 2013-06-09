@@ -42,11 +42,11 @@
                 <li>
                   <a href="/auth/auth_twitter/">Twitterログイン</a>
                 </li>
-<!--                
+
                 <li>
                   <a href="/auth/auth_fb">facebookログイン</a>
                 </li>
-                -->
+
               </ul>
             </li>
             % }

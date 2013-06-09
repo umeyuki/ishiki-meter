@@ -27,6 +27,12 @@ helper redis => sub {
     Redis->new( %{ $config->{Redis} } );
 };
 
+helper dbi => sub {
+        my $dbh = DBI->connect( @{ $config->{DBI} } );
+        $dbh->{sqlite_unicode} = 1;
+        $dbh;
+};
+
 helper furl => sub {
     my $self = shift;
     Furl::HTTP->new;
@@ -43,15 +49,13 @@ helper keywords => sub {
     #TODO use redis
     my $keywords = eval $self->redis->get('keywords') || {};
     unless ( %$keywords ) {
-        my $dbh = DBI->connect( @{ $config->{DBI} } );
-        $dbh->{sqlite_unicode} = 1;
         my $sql = <<SQL;
 SELECT
     id,name,value
 FROM
     keywords
 SQL
-        my $sth = $dbh->prepare($sql);
+        my $sth = $self->dbh->prepare($sql);
         $sth->execute();
         my $rows = $sth->fetchall_arrayref( {} );
         for my $row (@$rows) {
@@ -60,25 +64,89 @@ SQL
         
         $self->redis->set( 'keywords' , Dumper($keywords) );
         $sth->finish;
-        $dbh->disconnect;
+        $self->dbh->disconnect;
     }
     $keywords;
 };
+
+helper keyword_map => sub {
+    my ($self) = shift;
+
+    #TODO use redis
+    my $keywords = eval $self->redis->get('keyword_map') || {};
+    unless ( %$keywords ) {
+        my $sql = <<SQL;
+SELECT
+    id,name,value
+FROM
+    keywords
+SQL
+        my $sth = $self->dbh->prepare($sql);
+        $sth->execute();
+        my $rows = $sth->fetchall_arrayref( {} );
+        for my $row (@$rows) {
+            $keywords->{ $row->{id} } =  $row->{name};
+        }
+        
+        $self->redis->set( 'keyword_map' , Dumper($keywords) );
+        $sth->finish;
+        $self->dbh->disconnect;
+    }
+    $keywords;
+};
+
 
 helper ishiki => sub {
     Ishiki::Calculator->new( );
 };
 
+helper show_page => sub {
+    my ( $self, $page_id) = @_;
+
+    my $sql = <<SQL;
+SELECT
+  user_name,authenticated_by,remort_id
+FROM
+  pages
+WHERE
 
 
-helper page_create => sub {
-    # ページを作成 
-    
+SQL
+        
+
 };
 
-helper popular => sub {
-    
+helper show_keywords => sub {
+    my ($self, $page_id) = @_;
+
+    my $page_keywords = eval $self->redis->get('page_keywords' . $page_id ) || [];
+
+    unless ( @$page_keywords > 0 ) {
+        # redisになければsqlite3から取得
+        my $sql = <<SQL;
+SELECT
+  keyword_id
+FROM
+  page_keywords
+WHERE
+  page_id = ?;
+SQL
+        my $sth = $self->dbh->prepare($sql);
+        $sth->bind_param(1,$page_id);
+        $sth->execute();
+
+        my $keywords = $self->{keywords};
+        my $rows = $sth->fetchall_arrayref({});
+
+        my $keyword_map = $self->keyword_map;
+        for my $row ( @$rows ) {
+            push @$page_keywords, $keyword_map->{$row->{keyword_id}};
+        }
+        $self->redis->set( 'page_keywords_' . $page_id  , Dumper($page_keywords) );
+    }    
+    \$page_keywords;
 };
+
 
 sub startup {
     my $self = shift;
@@ -103,9 +171,6 @@ get '/' => sub {
         $ishiki        = $session->get('ishiki');
         $used_keywords = $session->get('used_keywords');        
     }
-    warn Dumper $ishiki;
-    warn "hogehoge";
-    warn Dumper $used_keywords;
 
     $self->stash->{user}        = $user;
     $self->stash->{keywords}    = $used_keywords;
@@ -170,17 +235,19 @@ get '/auth/auth_twitter' => sub {
         }
 
         my $profile = $user->{description};
-        my @sentenses = ( $profile,@tweets );
+        my @messages = ( $profile,@tweets );
 
-        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@sentenses, $self->keywords );
-#        $self->create_page($ishiki,$processed_sentenses);
+        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
+#        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
+#        $self->popular_keyword($used_keywords);
 #        $self->update_populars($populars); use redis
+        
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
         $session->set( 'used_keywords'    => $used_keywords );
 #        my $page_id = $self->create($ishiki,);
 #        $self->redirect_to('/' . $page_id);
-        $self->redirect_to('/');
+        $self->redirect_to('/' );
          
     }
 
@@ -242,13 +309,49 @@ get '/auth/auth_fb' => sub {
         }
         my $res = URI->new("?$h_body");
         my %q = $res->query_form;
-        $uri = URI->new('https://graph.facebook.com/me/home');
-        $uri->query_form(
-            access_token => $q{access_token}
-        );
-        (undef, $h_code, undef, $h_hdrs, $h_body) = $self->furl->get($uri);
-        my $fb = $self->json->decode($h_body);
-        warn Dumper $fb;
+
+        my $user = {};
+        my @messages = ();                
+        {
+            my $uri = URI->new('https://graph.facebook.com/me/');
+            $uri->query_form(
+                access_token => $q{access_token}
+            );
+            (undef, $h_code, undef, $h_hdrs, $h_body) = $self->furl->get($uri);
+            my $fb = $self->json->decode($h_body);
+            my $profile_image_url = sprintf("https://graph.facebook.com/%s/picture",$fb->{id});
+            $user = {
+                remote_id         => $fb->{id},
+                name              => $fb->{name},
+                profile           => $fb->{bio},
+                profile_image_url => $profile_image_url
+            };
+        }
+        {
+            $uri = URI->new('https://graph.facebook.com/me/feed/');
+            $uri->query_form(
+                access_token => $q{access_token}
+            );
+            (undef, $h_code, undef, $h_hdrs, $h_body) = $self->furl->get($uri);
+            my $fb = $self->json->decode($h_body);
+
+            for my $data ( @{$fb->{data}} ) {
+                push @messages, $data->{message} if $data->{message};
+            }
+        }
+        push @messages,$user->{profile};
+        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
+#        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
+#        $self->popular_keyword($used_keywords);
+#        $self->update_populars($populars); use redis
+        
+        $session->set( 'user'        => $user );
+        $session->set( 'ishiki'      => $ishiki );
+        $session->set( 'used_keywords'    => $used_keywords );
+#        my $page_id = $self->create($ishiki,);
+#        $self->redirect_to('/' . $page_id);
+        $self->redirect_to('/' );
+        
     } else {
         die;
     }
@@ -261,6 +364,16 @@ get '/logout' => sub {
     $session->expire();
     $self->redirect_to('/');
 };
+
+get '/:id' => sub {
+    my $self = shift;
+
+    my $page_id = $self->param('id');
+    $self->stash->{'pages'} = $self->show_page($page_id);
+    
+    $self->render( page => $self->param('id') );
+};
+
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";
