@@ -1,3 +1,14 @@
+create table users {
+  id integer primary key autoincrement,
+  authenticated_by text not null,
+  remote_id integer not null,
+  name text not null.
+  profile_image_url text not null,
+  created text not null,
+  updated text not null,
+  deleted text  
+}
+
 create table keywords (
     id integer primary key autoincrement,
     name text not null,

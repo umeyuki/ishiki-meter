@@ -100,6 +100,41 @@ helper ishiki => sub {
     Ishiki::Calculator->new( );
 };
 
+helper create_user => sub {
+    my $self = shift;
+
+    # usersテーブルに追加
+    # authenticated_by,remote_id,name,profile_image_url
+    
+    
+};
+
+helper create_page => sub {
+    my ($self,$user,$ishiki,$used_keywords) = @_;
+
+    # pagesを作成
+    # ishiki int, keywords_html text
+    #
+
+    # 表示用htmlを作成
+    my @html;
+    my $base_html = <<HTML;
+<li class="rank"><a href="https://twitter.com/search?q=%s" >%s</a></li>
+HTML
+    for my $keyword ( @{$used_keywords} ){
+        push @html,sprintf($base_html,$used_keywords->{$keyword},$keyword,$keyword);
+    }
+    
+    my $sql = <<SQL;
+INSERT
+INTO
+  pages(ishiki,authenticated_by,remote_id,name,profile_image_url)
+VALUES
+  ();  
+SQL
+    
+};
+
 helper show_page => sub {
     my ( $self, $page_id) = @_;
 
