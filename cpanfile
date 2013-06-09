@@ -6,6 +6,7 @@ requires 'Plack::Session';
 requires 'Plack::Middleware::Session';
 requires 'Furl';
 requires 'DBI';
+requires 'DBIx::TransactionManager';
 requires 'JSON';
 requires 'Mojolicious';
 requires 'OAuth::Lite::Consumer';

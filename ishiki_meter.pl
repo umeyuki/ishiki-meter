@@ -4,6 +4,7 @@ use Plack::Builder;
 use Plack::Session;
 use Data::Dumper::Concise;
 use DBI;
+use DBIx::TransactionManager;
 use utf8;
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -13,6 +14,7 @@ use OAuth::Lite::Consumer;
 use URI;
 use Digest::SHA;
 use Furl;
+
 
 use JSON;
 use Redis;
@@ -101,16 +103,29 @@ helper ishiki => sub {
 };
 
 helper create_user => sub {
-    my $self = shift;
+    my ($self,$user,$authenticated_by) = @_;
 
     # usersテーブルに追加
     # authenticated_by,remote_id,name,profile_image_url
-    
-    
-};
+    my $sql = <<SQL;
+INSERT OR IGNORE
+INTO
+  users(authenticated_by,remote_id,name,profile_image_url,created,updated)
+VALUES
+  (?,?,?,?,?)
+SQL
+    my $sth =$self->dbh->prepare($sql);
+    $sth->bind_param(1,$authenticated_by);
+    $sth->bind_param(2,$user->{id}); 
+    $sth->bind_param(3,$user->{name}); 
+    $sth->bind_param(4,$user->{profile_image_url});
+    $sth->execute;
+    $sth->finish;
+    $self->dbh->sqlite_last_insert_rowid()
+;
 
 helper create_page => sub {
-    my ($self,$user,$ishiki,$used_keywords) = @_;
+    my ($self,$user_id,$ishiki,$used_keywords) = @_;
 
     # pagesを作成
     # ishiki int, keywords_html text
@@ -128,11 +143,16 @@ HTML
     my $sql = <<SQL;
 INSERT
 INTO
-  pages(ishiki,authenticated_by,remote_id,name,profile_image_url)
+  pages(user_id,ishiki,html)
 VALUES
-  ();  
+  (?,?,?);
 SQL
-    
+    my $sth = $self->dbh->prepare($sql);
+    $sth->bind_param(1,$user_id);
+    $sth->bind_param(2,$ishiki);
+    $sth->bind_param(3,@html);
+    $sth->execute;
+    $sth->finish;
 };
 
 helper show_page => sub {
@@ -273,7 +293,12 @@ get '/auth/auth_twitter' => sub {
         my @messages = ( $profile,@tweets );
 
         my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
+        my $tm = DBIx::TransactionManager->new($self->dbh);↲        
+        #       $self->create_user($user,'twitter');
+        #       $self->create_page($user,$ishiki,$used_keywords);
+        
 #        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
+        
 #        $self->popular_keyword($used_keywords);
 #        $self->update_populars($populars); use redis
         
@@ -307,7 +332,7 @@ get '/auth/auth_fb' => sub {
         my $uri = URI->new( 'https://www.facebook.com/dialog/oauth');
         $uri->query_form(
             client_id => $self->config->{facebook}->{client_id},
-            redirect_uri => 'http://localhost:5000/auth/auth_fb',
+            redirect_uri => $self->config->{facebook}->{callback_url},
             scope => 'read_stream',
             state => $fb_state
         );
