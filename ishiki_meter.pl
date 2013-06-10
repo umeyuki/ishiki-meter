@@ -2,10 +2,6 @@
 
 use utf8;
 use Carp;
-use FindBin;
-use lib "$FindBin::Bin/lib";
-use Ishiki::Calculator;
-
 use Mojolicious::Lite;
 use Plack::Builder;
 use Plack::Session;
@@ -97,9 +93,24 @@ SQL
     $keywords;
 };
 
-#TODO use helper
 helper ishiki => sub {
-    Ishiki::Calculator->new( );
+    my ( $self,$sentenses,$keywords ) = @_;
+
+    my $ishiki = 0;
+    my @processeds = ();
+    my %populars = ();
+    my %used = ();
+    for my $sentense ( @$sentenses ){
+        for my $keyword ( keys %{$keywords} ) {
+            if ( $sentense =~ /$keyword/i ) {
+                my $id    = $keywords->{$keyword}->{id};
+                my $value = $keywords->{$keyword}->{value};
+                $used{$keyword} = $value;
+                $ishiki += $value;
+            }
+        }
+    }
+    return $ishiki,\%used;
 };
 
 helper process => sub {
@@ -324,7 +335,7 @@ get '/auth/auth_twitter' => sub {
         my $profile = $user->{description};
         my @messages = ( $profile,@tweets );
 
-        my ( $ishiki,$used_keywords ) = $self->ishiki->calc( \@messages, $self->keywords );
+        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
         $self->process($user,'twitter',$ishiki,$used_keywords);
 #           $self->create_page($user,$ishiki,$used_keywords);
         
@@ -429,7 +440,7 @@ get '/auth/auth_fb' => sub {
             }
         }
         push @messages,$user->{profile};
-        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki->calc( \@messages, $self->keywords );
+        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki( \@messages, $self->keywords );
 #       $self->process($user,$ishiki,$used_keywords);
         #        $self->popular_keyword($used_keywords);
 #        $self->update_populars($populars); use redis
