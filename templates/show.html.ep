@@ -1,0 +1,25 @@
+% layout 'wrapper';
+% title '意識メーター';
+
+% if ( keys %{$content} > 0 ) {
+<p><img src="<%=  $content->{profile_image_url} %>"/><%= $content->{name} %>さんの意識調査</p>
+<div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
+<script>
+    var g = new JustGage({
+        id: "gauge",
+        value: <%= $content->{ishiki} %>,
+        min: 0,
+        max: 1000,
+        title: "意識の高さ"
+      });
+</script>
+
+
+<p>意識の高い発言</p>
+<div class="hero-unit">
+  <ul class="tag01">
+    <%= Mojo::ByteStream->new($content->{html}) %>
+  </ul>
+</div>
+
+% }
