@@ -49,7 +49,7 @@ helper keywords => sub {
     unless ( %$keywords ) {
         my $sql = <<SQL;
 SELECT
-    id,name,value
+    id,name,value,url
 FROM
     keywords
 SQL
@@ -58,7 +58,7 @@ SQL
         $sth->execute();
         my $rows = $sth->fetchall_arrayref( {} );
         for my $row (@$rows) {
-            $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value} };
+            $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value}, url => $row->{url} };
         }
         
         $self->redis->set( 'keywords' , Dumper($keywords) );
@@ -80,7 +80,11 @@ helper ishiki => sub {
             if ( $sentense =~ /$keyword/i ) {
                 my $id    = $keywords->{$keyword}->{id};
                 my $value = $keywords->{$keyword}->{value};
-                $used{$keyword} = $value;
+                my $url   = $keywords->{$keyword}->{url};
+                $used{$keyword} = {
+                    value => $value,
+                    url   => $url
+                };
                 $ishiki += $value;
             }
         }
@@ -169,12 +173,19 @@ helper create_page => sub {
     my ($self,$user_id,$ishiki,$used_keywords) = @_;
 
     # 表示用htmlを作成
-    my @html;
+    my @html = ();
     my $base_html = <<HTML;
-<li class="rank%d"><a href="https://twitter.com/search?q=%s" >%s</a></li>
+<li class="rank%d"><a href="%s" >%s</a></li>
 HTML
+    my $link;
     for my $keyword ( keys %{$used_keywords} ){
-        push @html,sprintf($base_html,$used_keywords->{$keyword},$keyword,$keyword);
+        if ( my $url = $used_keywords->{$keyword}->{url} ) {
+            $link = $url;
+        } else {
+            $link = sprintf('https://twitter.com/search?q=%s',$keyword);
+        }
+
+        push @html,sprintf($base_html,$used_keywords->{$keyword}->{value} ,$link, $keyword);
     }
     
     my $sql = <<SQL;
@@ -251,12 +262,6 @@ get '/' => sub {
 
     my ( $screen_name, $user, $profile, $ishiki, $used_keywords );
     
-    if ( $session->get('user') && keys %{$session->get('user')} > 0 ) {
-        $user          = $session->get('user');
-        $ishiki        = $session->get('ishiki');
-        $used_keywords = $session->get('used_keywords');        
-    }
-
     $self->stash->{user}        = $user;
     $self->stash->{keywords}    = $used_keywords;
     $self->stash->{ishiki}      = $ishiki;
