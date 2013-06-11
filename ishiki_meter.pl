@@ -373,7 +373,7 @@ get '/auth/auth_fb' => sub {
         $uri->query_form(
             client_id     => $self->config->{facebook}->{client_id},
             client_secret => $self->config->{facebook}->{client_secret},            
-            redirect_uri  => 'http://localhost:5000/auth/auth_fb',
+            redirect_uri  => $self->config->{facebook}->{callback_url},
             code => $code
         );
 
