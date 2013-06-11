@@ -25,7 +25,7 @@ helper redis => sub {
     Redis->new( %{ $config->{Redis} } );
 };
 
-helper dbi => sub {
+helper dbh => sub {
         my $dbh = DBI->connect( @{ $config->{DBI} } );
         $dbh->{sqlite_unicode} = 1;
         $dbh;
@@ -53,7 +53,8 @@ SELECT
 FROM
     keywords
 SQL
-        my $sth = $self->dbh->prepare($sql);
+        my $dbh = $self->dbh;
+        my $sth = $dbh->prepare($sql);
         $sth->execute();
         my $rows = $sth->fetchall_arrayref( {} );
         for my $row (@$rows) {
@@ -62,33 +63,7 @@ SQL
         
         $self->redis->set( 'keywords' , Dumper($keywords) );
         $sth->finish;
-        $self->dbh->disconnect;
-    }
-    $keywords;
-};
-
-helper keyword_map => sub {
-    my ($self) = shift;
-
-    #TODO use redis
-    my $keywords = eval $self->redis->get('keyword_map') || {};
-    unless ( %$keywords ) {
-        my $sql = <<SQL;
-SELECT
-    id,name,value
-FROM
-    keywords
-SQL
-        my $sth = $self->dbh->prepare($sql);
-        $sth->execute();
-        my $rows = $sth->fetchall_arrayref( {} );
-        for my $row (@$rows) {
-            $keywords->{ $row->{id} } =  $row->{name};
-        }
-        
-        $self->redis->set( 'keyword_map' , Dumper($keywords) );
-        $sth->finish;
-        $self->dbh->disconnect;
+        $dbh->disconnect;
     }
     $keywords;
 };
@@ -114,15 +89,19 @@ helper ishiki => sub {
 };
 
 helper process => sub {
-    my ($self,$user,$authenticated_by,$ishiki,$used_keywords) = @_;
+    my ($self,$user,$ishiki,$used_keywords) = @_;
 
+    my $page_id;
+    my $dbh = $self->dbh;
     try {
-        my $tm = DBIx::TransactionManager->new( $self->dbh );
+        my $tm = DBIx::TransactionManager->new( $dbh );
         {
             my $txn = $tm->txn_scope;
             my $user_id =
-                $self->create_user( $user, $authenticated_by ) || $self->user_id;
-            $self->create_page( $user_id, $ishiki, $used_keywords );
+                $self->create_user( $user  ) || $self->user_id( $user );
+            print "user_id:" . $user_id ."\n";
+            $page_id = $self->create_page( $user_id, $ishiki, $used_keywords );
+            print "page_id:" . $page_id . "\n";
             $txn->commit;
         }
         # popular keyword ranking
@@ -130,10 +109,11 @@ helper process => sub {
     } catch {
         warn "caught error: $_";
     }
+    $page_id;
 };
 
 helper user_id => sub {
-    my ( $self, $authenticated_by, $remote_id ) = @_;
+    my ( $self, $user  ) = @_;
 
     my $user_id;
     my $sql = <<SQL;
@@ -145,55 +125,57 @@ WHERE
   authenticated_by = ? AND
   remote_id        = ?
 SQL
-    
-    my $sth = $self->dbh->prepare($sql);
-    $sth->bind_param(1,$authenticated_by);
-    $sth->bind_param(2,$remote_id);
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$user->{authenticated_by});
+    $sth->bind_param(2,$user->{remote_id});
     $sth->execute or croak $sth->errstr;
     my $rows = $sth->fetchall_arrayref({});
-    # FIXME online
+    # FIXME oneline
     for my $row ( @$rows ) {
         $user_id = $row->{id};
     }
     
     croak 'Select user error!' unless $user_id;
+    $dbh->disconnect;
     $user_id;
 };
    
 
 helper create_user => sub {
-    my ($self,$user,$authenticated_by) = @_;
+    my ($self,$user) = @_;
 
-    # usersテーブルに追加
-    # authenticated_by,remote_id,name,profile_image_url
     my $sql = <<SQL;
 INSERT OR IGNORE
 INTO
-  users(authenticated_by,remote_id,name,profile_image_url,)
+  users(authenticated_by,remote_id,name,profile_image_url)
 VALUES
   (?,?,?,?)
 SQL
-    my $sth =$self->dbh->prepare($sql);
-    $sth->bind_param(1,$authenticated_by);
-    $sth->bind_param(2,$user->{id}); 
+    my $dbh = $self->dbh; 
+    my $sth =$dbh->prepare($sql);
+
+    $sth->bind_param(1,$user->{authenticated_by});
+    $sth->bind_param(2,$user->{remote_id}); 
     $sth->bind_param(3,$user->{name}); 
     $sth->bind_param(4,$user->{profile_image_url});
     $sth->execute or croak $sth->errstr;
     $sth->finish;
-    $self->dbh->sqlite_last_insert_rowid()
-;
+
+    my $user_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','users','id');
+    $dbh->disconnect;
+    $user_id;
+};
 
 helper create_page => sub {
     my ($self,$user_id,$ishiki,$used_keywords) = @_;
-
-    # pagesを作成
 
     # 表示用htmlを作成
     my @html;
     my $base_html = <<HTML;
 <li class="rank%d"><a href="https://twitter.com/search?q=%s" >%s</a></li>
 HTML
-    for my $keyword ( @{$used_keywords} ){
+    for my $keyword ( keys %{$used_keywords} ){
         push @html,sprintf($base_html,$used_keywords->{$keyword},$keyword,$keyword);
     }
     
@@ -204,17 +186,21 @@ INTO
 VALUES
   (?,?,?);
 SQL
-    my $sth = $self->dbh->prepare($sql);
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$user_id);
     $sth->bind_param(2,$ishiki);
-    $sth->bind_param(3,@html);
+    $sth->bind_param(3,join('',@html));
     $sth->execute or croak $sth->errstr;
     $sth->finish;
+
+    my $page_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','pages','id');
+    $dbh->disconnect;
+    $page_id;
 };
 
 helper show_page => sub {
     my ( $self, $page_id) = @_;
-
     my $sql = <<SQL;
 SELECT
   users.name AS name ,
@@ -229,20 +215,23 @@ WHERE
   pages.id = ?
 SQL
 
-    my $sth = $self->dbh->prepare($sql);
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$page_id);
     $sth->execute or croak $sth->errstr;
-    $sth->finish;
-    my %result = ();
     my $rows = $sth->fetchall_arrayref( {} );
+    $sth->finish;    
+
+    my %result = ();    
     for my $row ( @$rows ) {
         %result = (
-            name => $row->{name},
+            name               => $row->{name},
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
             html               => $row->{html}
         );
     }
+    $dbh->disconnect;
     \%result;
 };
 
@@ -318,7 +307,7 @@ get '/auth/auth_twitter' => sub {
             url => q{http://api.twitter.com/1/account/verify_credentials.json},
             token => $access_token,
         );
-        my $user = $self->json->utf8->decode( $credentials_res->decoded_content );
+        my $tw_user = $self->json->utf8->decode( $credentials_res->decoded_content );
         my $tl_res = $consumer->request(
             method => 'GET',
             url    => 'https://api.twitter.com/1.1/statuses/user_timeline.json',
@@ -332,23 +321,23 @@ get '/auth/auth_twitter' => sub {
             push @tweets, $tweet->{text};
         }
 
-        my $profile = $user->{description};
-        my @messages = ( $profile,@tweets );
+        my @messages = ( $tw_user->{description},@tweets );
 
+        my $user = {
+            authenticated_by  => 'twitter',
+            remote_id         => $tw_user->{id},
+            name              => $tw_user->{screen_name},
+            profile_image_url => $tw_user->{profile_image_url}
+        };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
-        $self->process($user,'twitter',$ishiki,$used_keywords);
-#           $self->create_page($user,$ishiki,$used_keywords);
-        
-#        my $page_id = $self->create_page($user,$ishiki,$used_keywords);
-        
-        
-        $session->set( 'user'        => $user );
-        $session->set( 'ishiki'      => $ishiki );
-        $session->set( 'used_keywords'    => $used_keywords );
-#        my $page_id = $self->create($ishiki,);
-#        $self->redirect_to('/' . $page_id);
-        $self->redirect_to('/' );
-         
+        my $page_id = $self->process($user,$ishiki,$used_keywords);
+
+
+        # $session->set( 'user'        => $user );
+        # $session->set( 'ishiki'      => $ishiki );
+        # $session->set( 'used_keywords'    => $used_keywords );
+
+        $self->redirect_to('/' . $page_id);
     }
 
 };
@@ -448,8 +437,7 @@ get '/auth/auth_fb' => sub {
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
         $session->set( 'used_keywords'    => $used_keywords );
-#        my $page_id = $self->create($ishiki,);
-#        $self->redirect_to('/' . $page_id);
+
         $self->redirect_to('/' );
         
     } else {
@@ -469,9 +457,8 @@ get '/:id' => sub {
     my $self = shift;
 
     my $page_id = $self->param('id');
-    $self->stash->{'pages'} = $self->show_page($page_id);
-    
-    $self->render( page => $self->param('id') );
+    $self->stash->{content} = $self->show_page($page_id);
+    $self->render('show');
 };
 
 
