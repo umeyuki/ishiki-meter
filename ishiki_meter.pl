@@ -101,10 +101,10 @@ helper process => sub {
                 $self->create_user( $user  ) || $self->user_id( $user );
             $page_id = $self->create_page( $user_id, $ishiki, $used_keywords );
             $txn->commit;
+            # popular keyword ranking
+            $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
             return $page_id;
         }
-        # popular keyword ranking
-        $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
     } catch {
         warn "caught error: $_";
     }
