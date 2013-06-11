@@ -45,63 +45,63 @@ CSS Information
 	z-index: 50;
 	color: #000;
 }
-.tag01 li.rank1 {
+.tag01 li.rank10 {
 	line-height: 1.3em;
 }
-.tag01 li.rank1 a {
+.tag01 li.rank10 a {
 	top: -5px;
 	z-index: 1;
 	font-size: 2.8em;
 }
-.tag01 li.rank2 a {
+.tag01 li.rank9 a {
 	top: -4px;
 	z-index: 2;
 	font-size: 2.6em;
 	color: #222;
 }
-.tag01 li.rank3 a {
+.tag01 li.rank8 a {
 	top: 4px;
 	z-index: 3;
 	font-size: 2.4em;
 	color: #333;
 }
-.tag01 li.rank4 a {
+.tag01 li.rank7 a {
 	top: -6px;
 	z-index: 4;
 	font-size: 2.2em;
 	color: #444;
 }
-.tag01 li.rank5 a {
+.tag01 li.rank6 a {
 	top: 8px;
 	z-index: 5;
 	font-size: 2em;
 	color: #555;
 }
-.tag01 li.rank6 a {
+.tag01 li.rank5 a {
 	top: -5px;
 	z-index: 6;
 	font-size: 1.8em;
 	color: #666;
 }
-.tag01 li.rank7 a {
+.tag01 li.rank4 a {
 	top: 6px;
 	z-index: 7;
 	font-size: 1.6em;
 	color: #777;
 }
-.tag01 li.rank8 a {
+.tag01 li.rank3 a {
 	top: -4px;
 	z-index: 8;
 	font-size: 1.4em;
 	color: #888;
 }
-.tag01 li.rank9 a {
+.tag01 li.rank2 a {
 	top: 8px;
 	z-index: 9;
 	font-size: 1.2em;
 	color: #999;
 }
-.tag01 li.rank10 a {
+.tag01 li.rank1 a {
 	top: 0;
 	z-index: 10;
 	font-size: 1em;

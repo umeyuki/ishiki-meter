@@ -409,7 +409,8 @@ get '/auth/auth_fb' => sub {
                 remote_id         => $fb->{id},
                 name              => $fb->{name},
                 profile           => $fb->{bio},
-                profile_image_url => $profile_image_url
+                profile_image_url => $profile_image_url,
+                authenticated_by  => 'facebook'
             };
         }
         {
@@ -425,14 +426,16 @@ get '/auth/auth_fb' => sub {
             }
         }
         push @messages,$user->{profile};
-        my ( $ishiki,$used_keywords,$populars ) = $self->ishiki( \@messages, $self->keywords );
+
+        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
         
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
         $session->set( 'used_keywords'    => $used_keywords );
 
-        $self->redirect_to('/' );
-        
+        my $page_id = $self->process($user,$ishiki,$used_keywords);
+
+        $self->redirect_to('/' . $page_id  );
     } else {
         die;
     }
