@@ -99,17 +99,15 @@ helper process => sub {
             my $txn = $tm->txn_scope;
             my $user_id =
                 $self->create_user( $user  ) || $self->user_id( $user );
-            print "user_id:" . $user_id ."\n";
             $page_id = $self->create_page( $user_id, $ishiki, $used_keywords );
-            print "page_id:" . $page_id . "\n";
             $txn->commit;
+            return $page_id;
         }
         # popular keyword ranking
         $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
     } catch {
         warn "caught error: $_";
     }
-    $page_id;
 };
 
 helper user_id => sub {
@@ -331,12 +329,10 @@ get '/auth/auth_twitter' => sub {
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
         my $page_id = $self->process($user,$ishiki,$used_keywords);
-
-
+        
         # $session->set( 'user'        => $user );
         # $session->set( 'ishiki'      => $ishiki );
         # $session->set( 'used_keywords'    => $used_keywords );
-
         $self->redirect_to('/' . $page_id);
     }
 
@@ -430,9 +426,6 @@ get '/auth/auth_fb' => sub {
         }
         push @messages,$user->{profile};
         my ( $ishiki,$used_keywords,$populars ) = $self->ishiki( \@messages, $self->keywords );
-#       $self->process($user,$ishiki,$used_keywords);
-        #        $self->popular_keyword($used_keywords);
-#        $self->update_populars($populars); use redis
         
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
