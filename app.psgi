@@ -32,12 +32,10 @@ helper dbh => sub {
 };
 
 helper furl => sub {
-    my $self = shift;
     Furl::HTTP->new;
 };
 
 helper json => sub {
-    my $self = shift;
     JSON->new;
 };
 
@@ -95,7 +93,7 @@ helper ishiki => sub {
 helper process => sub {
     my ($self,$user,$ishiki,$used_keywords) = @_;
 
-    my $page_id;
+    my $entry_id;
     my $dbh = $self->dbh;
     try {
         my $tm = DBIx::TransactionManager->new( $dbh );
@@ -103,11 +101,11 @@ helper process => sub {
             my $txn = $tm->txn_scope;
             my $user_id =
                 $self->create_user( $user  ) || $self->user_id( $user );
-            $page_id = $self->create_page( $user_id, $ishiki, $used_keywords );
+            $entry_id = $self->create_entry( $user_id, $ishiki, $used_keywords );
             $txn->commit;
             # popular keyword ranking
             $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
-            return $page_id;
+            return $entry_id;
         }
     } catch {
         warn "caught error: $_";
@@ -146,7 +144,7 @@ SQL
 
 helper create_user => sub {
     my ($self,$user) = @_;
-
+    warn Dumper $user;
     my $sql = <<SQL;
 INSERT OR IGNORE
 INTO
@@ -169,7 +167,7 @@ SQL
     $user_id;
 };
 
-helper create_page => sub {
+helper create_entry => sub {
     my ($self,$user_id,$ishiki,$used_keywords) = @_;
 
     # 表示用htmlを作成
@@ -191,7 +189,7 @@ HTML
     my $sql = <<SQL;
 INSERT
 INTO
-  pages(user_id,ishiki,html)
+  entries(user_id,ishiki,html)
 VALUES
   (?,?,?);
 SQL
@@ -203,30 +201,30 @@ SQL
     $sth->execute or croak $sth->errstr;
     $sth->finish;
 
-    my $page_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','pages','id');
+    my $entry_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','entries','id');
     $dbh->disconnect;
-    $page_id;
+    $entry_id;
 };
 
-helper show_page => sub {
-    my ( $self, $page_id) = @_;
+helper show => sub {
+    my ( $self, $entry_id) = @_;
     my $sql = <<SQL;
 SELECT
   users.name AS name ,
   users.profile_image_url AS image_url,
-  pages.ishiki AS ishiki,
-  pages.html AS html
+  entries.ishiki AS ishiki,
+  entries.html AS html
 FROM
-  pages
+  entries
 INNER JOIN
-  users ON pages.user_id = users.id
+  users ON entries.user_id = users.id
 WHERE
-  pages.id = ?
+  entries.id = ?
 SQL
 
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
-    $sth->bind_param(1,$page_id);
+    $sth->bind_param(1,$entry_id);
     $sth->execute or croak $sth->errstr;
     my $rows = $sth->fetchall_arrayref( {} );
     $sth->finish;    
@@ -307,7 +305,7 @@ get '/auth/auth_twitter' => sub {
         $session->remove('request_token');
         my $credentials_res = $consumer->request(
             method => 'GET',
-            url => q{http://api.twitter.com/1/account/verify_credentials.json},
+            url => q{http://api.twitter.com/1.1/account/verify_credentials.json},
             token => $access_token,
         );
         my $tw_user = $self->json->utf8->decode( $credentials_res->decoded_content );
@@ -333,12 +331,12 @@ get '/auth/auth_twitter' => sub {
             profile_image_url => $tw_user->{profile_image_url}
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
-        my $page_id = $self->process($user,$ishiki,$used_keywords);
+        my $entry_id = $self->process($user,$ishiki,$used_keywords);
         
         # $session->set( 'user'        => $user );
         # $session->set( 'ishiki'      => $ishiki );
         # $session->set( 'used_keywords'    => $used_keywords );
-        $self->redirect_to('/' . $page_id);
+        $self->redirect_to('/' . $entry_id);
     }
 
 };
@@ -438,9 +436,9 @@ get '/auth/auth_fb' => sub {
         $session->set( 'ishiki'      => $ishiki );
         $session->set( 'used_keywords'    => $used_keywords );
 
-        my $page_id = $self->process($user,$ishiki,$used_keywords);
+        my $entry_id = $self->process($user,$ishiki,$used_keywords);
 
-        $self->redirect_to('/' . $page_id  );
+        $self->redirect_to('/' . $entry_id  );
     } else {
         die;
     }
@@ -454,11 +452,11 @@ get '/logout' => sub {
     $self->redirect_to('/');
 };
 
-get '/:id' => sub {
+get '/:entry_id' => sub {
     my $self = shift;
 
-    my $page_id = $self->param('id');
-    $self->stash->{content} = $self->show_page($page_id);
+    my $entry_id = $self->param('entry_id');
+    $self->stash->{content} = $self->show($entry_id);
     $self->render('show');
 };
 
