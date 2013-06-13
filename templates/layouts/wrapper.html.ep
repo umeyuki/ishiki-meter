@@ -66,9 +66,34 @@
     </div><!-- #wrapper -->
     <div id="footer">
       <div class="container">
-        Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a>
+        <div class="row">
+          <div class="span8">
+            <p class="muted credit">
+              Ishiki meter is powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a>
+            </p>
+          </div>
+          <div class="span4">
+           <p class="muted credit">
+             Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a>
+           </p>
+          </div>
+        </div>
       </div>
-    </div> <!-- #fotter -->
+    </div>
+    <!-- <div id="footer"> -->
+    <!--   <div class="container"> -->
+    <!--     <div class="row"> -->
+    <!--       <div class="span6"> -->
+    <!--         <p class="muted credit">Ishiki meter is powerd by Perl and Mojolicious and redis and twitter bootstrap(:</p> -->
+    <!--       </div> -->
+    <!--       <div class="span6"> -->
+    <!--         Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a>             -->
+    <!--       </div> -->
+            
+
+    <!--     </div> -->
+    <!--   </div> -->
+    <!-- </div> <\!-- #fotter -\-> -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <%= javascript '/js/bootstrap.min.js' %>
   </body>
