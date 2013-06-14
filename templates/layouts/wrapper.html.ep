@@ -81,7 +81,8 @@
         <div class="row">
           <div class="span9">
             <p class="muted credit">
-              Ishiki meter is powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a>
+              powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a>
+              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and PRONTO高円寺店
             </p>
           </div>
           <div class="span3">
@@ -92,20 +93,6 @@
         </div>
       </div>
     </div>
-    <!-- <div id="footer"> -->
-    <!--   <div class="container"> -->
-    <!--     <div class="row"> -->
-    <!--       <div class="span6"> -->
-    <!--         <p class="muted credit">Ishiki meter is powerd by Perl and Mojolicious and redis and twitter bootstrap(:</p> -->
-    <!--       </div> -->
-    <!--       <div class="span6"> -->
-    <!--         Copy right 2013,<a href="http://umeyuki.net">umeyuki.net</a>             -->
-    <!--       </div> -->
-            
-
-    <!--     </div> -->
-    <!--   </div> -->
-    <!-- </div> <\!-- #fotter -\-> -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <%= javascript '/js/bootstrap.min.js' %>
   </body>

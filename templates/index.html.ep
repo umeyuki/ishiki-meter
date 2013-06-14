@@ -30,7 +30,7 @@
 
 % } else {
 <div class="hero-unit">
-    <h1>意識メーターとは?</h1>
+    <h2>意識メーターとは?</h2>
     <p class="lead">TwitterやFacebookの情報を基に意識の高さを調べるウェブサービスです</p>
     <p class="lead">Facebook、Twitterを使って意識の高さを調べる</p>
     <p>※勝手につぶやかれることはありません</p>
@@ -38,17 +38,20 @@
 <div class="row">
   <div class="marketing">
     <div class="span3">
-      <h3>夢を語る</h3>
-      デュアルライフ 自給自足 
+      <h3>夢</h3>
+      デュアルライフ 自給自足 プロ野球 世界一 経済的自由
+      アーユルヴェーダ ゴールドカラー 副業 不労所得
     </div>
     <div class="span3">
-      <h3>人生を語る</h3>
-      ゴールドカラー
+      <h3>自分</h3>
+       テレビ持ってない 早寝早起き トイレ掃除 複眼的思考
+      
       感謝
     </div>
     <div class="span3">
-      <h3>理想を語る</h3>
-      ノマド 自給自足
+      <h3>理想</h3>
+      ノマド 自給自足 ベーシックインカム 物を持たない生活
+      
     </div>
   </div>
 </div>
