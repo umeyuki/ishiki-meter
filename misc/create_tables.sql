@@ -13,6 +13,7 @@ create table if not exists users (
 create table if not exists keywords (
     id integer primary key autoincrement,
     name text not null,
+    description text,
     value integer default 5,
     url text,
     created datetime default current_timestamp,

@@ -94,7 +94,8 @@ helper process => sub {
     my ($self,$user,$ishiki,$used_keywords) = @_;
 
     my $entry_id;
-    my $dbh = $self->dbh;
+    my $dbh  = $self->dbh;
+    my $redis = $self->redis;
     try {
         my $tm = DBIx::TransactionManager->new( $dbh );
         {
@@ -103,8 +104,14 @@ helper process => sub {
                 $self->create_user( $user  ) || $self->user_id( $user );
             $entry_id = $self->create_entry( $user_id, $ishiki, $used_keywords );
             $txn->commit;
-            # popular keyword ranking
-            $self->redis->zincrby('ranking', 1, $_) for keys %$used_keywords;
+
+            # new ishiki
+            $redis->lpush('recent',$entry_id);
+            # user ranking
+            $redis->zadd('user_ranking', $ishiki, $user_id);
+            # keyword ranking
+            $redis->zincrby('keyword_ranking', 1, $_) for keys %$used_keywords;
+
             return $entry_id;
         }
     } catch {
@@ -452,12 +459,42 @@ get '/logout' => sub {
     $self->redirect_to('/');
 };
 
+get '/popular' => sub {
+    my $self = shift;
+
+    # 
+    my @popular_ids = $self->redis->lrange('popular',0,9);
+    my @popular_entries;
+    for my $entry_id ( @popular_ids ) {
+        push @popular_entries,$self->show($entry_id);
+    }
+    $self->stash->{content} = \@popular_entries;
+    $self->render('popular');
+};
+
+get '/recent' => sub {
+    my $self = shift;
+
+    #
+    my @recent_ids = $self->redis->lrange('recent',0,49);
+    my @recent_entries;
+    for my $entry_id ( @recent_ids ) {
+        push @recent_entries,$self->show($entry_id);
+    }
+    $self->stash->{content} = \@recent_entries;
+    $self->render('recent');
+};
+
+
 get '/:entry_id' => sub {
     my $self = shift;
 
     my $entry_id = $self->param('entry_id');
+
+    # popular
+    $self->redis->zincrby('popular', $entry_id);
+    
     $self->stash->{content} = $self->show($entry_id);
-    $self->render('show');
 };
 
 
