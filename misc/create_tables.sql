@@ -15,10 +15,18 @@ create table if not exists keywords (
     name text not null,
     description text,
     value integer default 5,
-    url text,
     created datetime default current_timestamp,
     updated datetime default current_timestamp,
     deleted text
+);
+
+create table if not exists related_products (
+    id integer primary key autoincrement,
+    keyword_id integer not null,
+    amazon_url  integer not null,
+    created datetime default current_timestamp,
+    updated datetime default current_timestamp,
+    deleted text,
 );
 
 create table if not exists entries  (

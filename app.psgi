@@ -8,14 +8,16 @@ use Plack::Session;
 use Data::Dumper::Concise;
 use DBI;
 use DBIx::TransactionManager;
+use SQL::Maker;
 use OAuth::Lite::Consumer;
 use URI;
-use Digest::SHA;
+use Digest::SHA qw/sha1_hex/;
 use Furl;
 use JSON;
 use Redis;
 use Try::Tiny;
 use Encode qw/encode_utf8/;
+
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
 
@@ -31,6 +33,17 @@ helper dbh => sub {
         $dbh;
 };
 
+helper sb => sub {
+    my ( $self, $type ) = @_;
+    if ( $type eq 'condition') {
+        SQL::Maker->Condition;
+    }
+    if ( $type eq 'select') {
+        SQL::Maker->Select->new(driver => 'SQLite');
+    }
+    SQL::Maker->new(driver => 'SQLite');
+}
+    
 helper furl => sub {
     Furl::HTTP->new;
 };
@@ -213,41 +226,7 @@ SQL
     $entry_id;
 };
 
-helper show => sub {
-    my ( $self, $entry_id) = @_;
-    my $sql = <<SQL;
-SELECT
-  users.name AS name ,
-  users.profile_image_url AS image_url,
-  entries.ishiki AS ishiki,
-  entries.html AS html
-FROM
-  entries
-INNER JOIN
-  users ON entries.user_id = users.id
-WHERE
-  entries.id = ?
-SQL
 
-    my $dbh = $self->dbh;
-    my $sth = $dbh->prepare($sql);
-    $sth->bind_param(1,$entry_id);
-    $sth->execute or croak $sth->errstr;
-    my $rows = $sth->fetchall_arrayref( {} );
-    $sth->finish;    
-
-    my %result = ();    
-    for my $row ( @$rows ) {
-        %result = (
-            name               => $row->{name},
-            profile_image_url  => $row->{image_url},
-            ishiki             => $row->{ishiki},
-            html               => $row->{html}
-        );
-    }
-    $dbh->disconnect;
-    \%result;
-};
 
 sub startup {
     my $self = shift;
@@ -255,6 +234,103 @@ sub startup {
     my $r = $self->routes;
     $r->route('/')->via('GET')->to('index#index');
 }
+
+# 全ページ共通処理 ランキングサイドバー
+under sub {
+    my $self = shift;
+
+    # 最も使われているランキング 1週間ごとに更新が望ましい
+    $self->{keyword_ranking} = $self->keyword_ranking;    
+    # マンスリー意識ランキング entry_idとuser_nameとishikiを表示
+    $self->{entry_ranking}   = $self->entry_ranking;
+    
+    1;
+};
+
+helper keyword_ranking => sub {
+    my $self = shift;
+
+    my $redis = $self->redis;
+    my @rankin_keywords = $redis->zrevrange('keyword_ranking',0,9);
+
+    return unless @rankin_keywords;
+
+    my %ranking;
+    # 順位マップ作成 1 => $keyword_id, 2 => $keyword_id
+    my $rank = 1;
+    for my $keyword_id ( @rankin_keywords ) {
+        $ranking{$keyword_id} = $rank;
+        $rank++;
+    }
+
+    my ( $sql,@binds ) = $self->sb->select('keywords',['id','name'],{ id => \@rankin_keywords},{});
+    
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute(@binds);
+    my $rows = $sth->fetchall_arrayref({});
+
+    my %result;
+    for my $row ( @$rows ) {
+        my $keyword_id  = $row->{id};
+        my $name        = $row->{name};
+        my $rank        = $ranking{$keyword_id};
+        $result{$rank} = {
+            id      => $keyword_id,
+            name    => $name,
+        };
+    }
+    $sth->finish;
+    $dbh->disconnect;
+    \%result;
+};
+
+helper entry_ranking => sub {
+    my $self = shift;
+
+    my $redis = $self->redis;
+    my @rankin_entries =  $redis->zrevrange('entry_ranking',0,9);
+
+    return unless @rankin_entries;
+    
+    my $rank = 1;
+    for my $entry_id ( @rankin_keywords ) {
+        $ranking{$keyword_id} = $rank;
+        $rank++;
+    }
+
+    my $stmt = $self->sb('select');
+    my $condition = $self->sb('condition');
+
+    $stmt->add_select('u.name')->add_select('e.ishiki')->add_select('e.id');
+    $stmt->add_join( [ 'entries','e' ]=> {type => 'left', table => 'users u', condition => ['u.id = e.user_id']});    
+    $condition->add( id => \@rankin_entries );
+    $stmt->set_where($condition);
+
+    my $sql   = $stmt->as_sql;
+    my @binds = $stmt->bind;
+    
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute(@binds);
+
+    my %result;
+    my $rows = $sth->fetchall_arrayref({});
+    for my $row ( @$rows ) {
+        my $entry_id  = $row->{'e.id'};
+        my $name      = $row->{'u.name'};
+        my $ishiki    = $row->{'e.ishiki'};
+        my $rank      = $ranking{$entry_id};
+        
+        $result{$rank} = {
+            id      => $entry_id,
+            name    => $name,
+            ishiki  => $ishiki
+        };
+    }
+    
+    \%result;
+};
 
 get '/' => sub {
     my $self = shift;
@@ -485,7 +561,6 @@ get '/recent' => sub {
     $self->render('recent');
 };
 
-
 get '/:entry_id' => sub {
     my $self = shift;
 
@@ -497,6 +572,73 @@ get '/:entry_id' => sub {
     $self->stash->{content} = $self->show($entry_id);
 };
 
+helper show => sub {
+    my ( $self, $entry_id) = @_;
+    my $sql = <<SQL;
+SELECT
+  users.name AS name ,
+  users.profile_image_url AS image_url,
+  entries.ishiki AS ishiki,
+  entries.html AS html
+FROM
+  entries
+INNER JOIN
+  users ON entries.user_id = users.id
+WHERE
+  entries.id = ?
+SQL
+
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$entry_id);
+    $sth->execute or croak $sth->errstr;
+    my $rows = $sth->fetchall_arrayref( {} );
+    $sth->finish;    
+
+    my %result = ();    
+    for my $row ( @$rows ) {
+        %result = (
+            name               => $row->{name},
+            profile_image_url  => $row->{image_url},
+            ishiki             => $row->{ishiki},
+            html               => $row->{html}
+        );
+    }
+    $dbh->disconnect;
+    \%result;
+};
+
+get '/keyword/:name' => sub {
+    my $self = shift;
+
+    my $content = $self->keyword($self->param('name'));
+    $self->redirect_to('/') unless keys %$content > 0;
+
+    $self->stash->{content} = $content;
+    $self->render('keyword');
+
+};
+
+helper keyword => sub {
+    my ($self,$name) = @_;
+
+    my $sql = <<SQL;
+SELECT
+  id,name,description,amazon_url
+FROM
+  keywords
+WHERE name = ?
+SQL
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$name);
+    $sth->execute;
+
+    my ( $content ) = @{$sth->fetchall_arrayref({})};
+    $dbh->disconnect;
+        
+    $content;
+};
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";

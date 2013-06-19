@@ -14,7 +14,7 @@ create table keywords (
     id integer primary key autoincrement,
     name text not null,
     value integer default 5,
-    url text,
+    amazon_url text,
     created datetime default current_timestamp,
     updated datetime default current_timestamp,
     deleted text
