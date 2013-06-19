@@ -56,20 +56,21 @@
             <%= content %>
           </div> <!-- #content -->
           <div id="sidebar" class="span3">
-            
-            <h3>ユーザーランキング</h3>
+            <h3>広告枠</h3>
+            <div class="hero-unit"></div>
+            <h3>人気意識</h3>
             <ul>
-              <ol>1.@umeyuki:142130</ol>
-              <ol>2.@ozonosho:133120</ol>
-              <ol>3.@sonocomiso:100100</ol>
-              <ol>4.@eucharis4413:4300</ol>
+              <ol>@umeyuki:142130</ol>
+              <ol>@ozonosho:133120</ol>
+              <ol>@sonocomiso:100100</ol>
+              <ol>@eucharis4413:4300</ol>
             </ul>
-            <h3>ワードランキング</h3>
+            <h3>人気キーワード</h3>
             <ul>
-              <ol>1.@umeyuki:142130</ol>
-              <ol>2.@ozonosho:133120</ol>
-              <ol>3.@sonocomiso:100100</ol>
-              <ol>4.@eucharis4413:4300</ol>
+              <ol>登山</ol>
+              <ol>起業</ol>
+              <ol>デュアルライフ</ol>
+              <ol>ノマド</ol>
             </ul>
           </div> <!-- #sidebar -->
         </div> <!-- .row -->

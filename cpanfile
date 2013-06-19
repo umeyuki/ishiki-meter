@@ -7,6 +7,7 @@ requires 'Plack::Middleware::Session';
 requires 'Furl';
 requires 'DBI';
 requires 'SQL::Maker';
+requires 'SQL::Maker::Plugin::InsertMulti';
 requires 'DBIx::TransactionManager';
 requires 'JSON';
 requires 'Mojolicious';

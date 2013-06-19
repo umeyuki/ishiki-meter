@@ -35,13 +35,13 @@ helper dbh => sub {
 
 helper sb => sub {
     my ( $self, $type ) = @_;
+    return SQL::Maker->new(driver => 'SQLite') unless $type;
     if ( $type eq 'condition') {
-        SQL::Maker->Condition;
+        return SQL::Maker::Condition->new;
     }
     if ( $type eq 'select') {
-        SQL::Maker->Select->new(driver => 'SQLite');
+        return SQL::Maker::Select->new(driver => 'SQLite');
     }
-    SQL::Maker->new(driver => 'SQLite');
 };
     
 helper furl => sub {
@@ -60,7 +60,7 @@ helper keywords => sub {
     unless ( %$keywords ) {
         my $sql = <<SQL;
 SELECT
-    id,name,value,url
+    id,name,value
 FROM
     keywords
 SQL
@@ -69,7 +69,7 @@ SQL
         $sth->execute();
         my $rows = $sth->fetchall_arrayref( {} );
         for my $row (@$rows) {
-            $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value}, url => $row->{url} };
+            $keywords->{ $row->{name} } = { id => $row->{id}, value => $row->{value}  };
         }
         
         $self->redis->set( 'keywords' , Dumper($keywords) );
@@ -84,23 +84,22 @@ helper ishiki => sub {
 
     my $ishiki = 0;
     my @processeds = ();
-    my %populars = ();
-    my %used = ();
+    my %used_keywords;
+
     for my $sentense ( @$sentenses ){
         for my $keyword ( keys %{$keywords} ) {
             if ( $sentense =~ /$keyword/i ) {
                 my $id    = $keywords->{$keyword}->{id};
                 my $value = $keywords->{$keyword}->{value};
-                my $url   = $keywords->{$keyword}->{url};
-                $used{$keyword} = {
+                $used_keywords{$keyword} = {
+                    id    => $id,
                     value => $value,
-                    url   => $url
                 };
                 $ishiki += $value;
             }
         }
     }
-    return $ishiki,\%used;
+    return $ishiki,\%used_keywords;
 };
 
 helper process => sub {
@@ -114,21 +113,24 @@ helper process => sub {
         {
             my $txn = $tm->txn_scope;
             my $user_id =
-                $self->create_user( $user  ) || $self->user_id( $user );
-            $entry_id = $self->create_entry( $user_id, $ishiki, $used_keywords );
+                $self->create_user( $dbh,$user  ) || $self->user_id( $user );
+            $entry_id = $self->create_entry( $dbh,$user_id, $ishiki, $used_keywords );
+#            $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
             $txn->commit;
 
             # new ishiki
             $redis->lpush('recent',$entry_id);
             # user ranking
-            $redis->zadd('user_ranking', $ishiki, $user_id);
+            $redis->zadd('entry_ranking', $ishiki, $entry_id);
             # keyword ranking
-            $redis->zincrby('keyword_ranking', 1, $_) for keys %$used_keywords;
+            $redis->zincrby('keyword_ranking', 1, $used_keywords->{$_}->{id} ) for keys %$used_keywords;
 
             return $entry_id;
         }
+        $dbh->disconnect;
     } catch {
         warn "caught error: $_";
+        $dbh->disconnect;
     }
 };
 
@@ -163,8 +165,8 @@ SQL
    
 
 helper create_user => sub {
-    my ($self,$user) = @_;
-    warn Dumper $user;
+    my ($self,$dbh,$user) = @_;
+
     my $sql = <<SQL;
 INSERT OR IGNORE
 INTO
@@ -172,7 +174,6 @@ INTO
 VALUES
   (?,?,?,?)
 SQL
-    my $dbh = $self->dbh; 
     my $sth =$dbh->prepare($sql);
 
     $sth->bind_param(1,$user->{authenticated_by});
@@ -183,12 +184,11 @@ SQL
     $sth->finish;
 
     my $user_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','users','id');
-    $dbh->disconnect;
     $user_id;
 };
 
 helper create_entry => sub {
-    my ($self,$user_id,$ishiki,$used_keywords) = @_;
+    my ($self,$dbh,$user_id,$ishiki,$used_keywords) = @_;
 
     # 表示用htmlを作成
     my @html = ();
@@ -197,15 +197,10 @@ helper create_entry => sub {
 HTML
     my $link;
     for my $keyword ( keys %{$used_keywords} ){
-        if ( my $url = $used_keywords->{$keyword}->{url} ) {
-            $link = $url;
-        } else {
-            $link = sprintf('https://twitter.com/search?q=%s',$keyword);
-        }
-
+        $link = sprintf('https://twitter.com/search?q=%s',$keyword);
         push @html,sprintf($base_html,$used_keywords->{$keyword}->{value} ,$link, $keyword);
     }
-    
+
     my $sql = <<SQL;
 INSERT
 INTO
@@ -213,7 +208,6 @@ INTO
 VALUES
   (?,?,?);
 SQL
-    my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$user_id);
     $sth->bind_param(2,$ishiki);
@@ -222,10 +216,31 @@ SQL
     $sth->finish;
 
     my $entry_id = $dbh->last_insert_id('ishiki-meter.db','ishiki-meter.db','entries','id');
-    $dbh->disconnect;
     $entry_id;
 };
 
+helper create_entry_keywords => sub {
+    my ($self,$dbh,$entry_id,$user_id,$used_keywords) = @_;
+
+    SQL::Maker->load_plugin('InsertMulti');
+    my $keywords = $self->keywords;
+
+    # insert multi用に配列を作成
+    my @rows;
+    for my $keyword ( keys %$used_keywords )  {
+        push @rows,{
+            entry_id   => $entry_id,
+            user_id    => $user_id,
+            keyword_id => $used_keywords->{$keyword}->{id}
+        };
+    }
+
+    my ( $sql, @binds ) = $self->sb->insert_multi('entry_keywords', \@rows);
+    my $sth = $dbh->prepare($sql);
+    $sth->execute(@binds);
+    $sth->finish;
+    
+};
 
 
 sub startup {
@@ -290,7 +305,7 @@ helper entry_ranking => sub {
 
     my $redis = $self->redis;
     my @rankin_entries =  $redis->zrevrange('entry_ranking',0,9);
-
+    return;
     return unless @rankin_entries;
 
     my %ranking;
@@ -539,8 +554,10 @@ get '/logout' => sub {
 get '/popular' => sub {
     my $self = shift;
 
-    # 
-    my @popular_ids = $self->redis->lrange('popular',0,9);
+    #
+    my $redis = $self->redis;
+    
+    my @popular_ids = $redis->zrevrange('popular',0,9);
     my @popular_entries;
     for my $entry_id ( @popular_ids ) {
         push @popular_entries,$self->show($entry_id);
@@ -568,9 +585,11 @@ get '/:entry_id' => sub {
     my $entry_id = $self->param('entry_id');
 
     # popular
-    $self->redis->zincrby('popular', $entry_id);
+    my $redis = $self->redis;
+    $redis->zincrby('popular',1, $entry_id );
     
     $self->stash->{content} = $self->show($entry_id);
+    $self->render('show');
 };
 
 helper show => sub {
