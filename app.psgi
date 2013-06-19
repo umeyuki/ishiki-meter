@@ -42,7 +42,7 @@ helper sb => sub {
         SQL::Maker->Select->new(driver => 'SQLite');
     }
     SQL::Maker->new(driver => 'SQLite');
-}
+};
     
 helper furl => sub {
     Furl::HTTP->new;
@@ -292,10 +292,11 @@ helper entry_ranking => sub {
     my @rankin_entries =  $redis->zrevrange('entry_ranking',0,9);
 
     return unless @rankin_entries;
-    
+
+    my %ranking;
     my $rank = 1;
-    for my $entry_id ( @rankin_keywords ) {
-        $ranking{$keyword_id} = $rank;
+    for my $entry_id ( @rankin_entries ) {
+        $ranking{$entry_id} = $rank;
         $rank++;
     }
 
