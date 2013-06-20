@@ -32,8 +32,8 @@
 <div class="hero-unit">
     <h2>意識メーターとは?</h2>
     <p class="lead">TwitterやFacebookの情報を基に意識の高さを調べるウェブサービスです</p>
-    <p class="lead">Facebook、Twitterを使って意識の高さを調べる</p>
-    <p>※勝手につぶやかれることはありません</p>
+    <button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button>    
+    <button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button>
 </div>
 <div class="row">
   <div class="marketing">

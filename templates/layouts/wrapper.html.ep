@@ -7,6 +7,9 @@
     <%= stylesheet '/css/bootstrap-responsive.min.css' %>
     <%= stylesheet '/css/tag.css' %>
     <%= stylesheet '/css/docs.css' %>
+    <%= stylesheet '/css/font-awesome.min.css' %>
+    <%= stylesheet '/css/font-awesome-ie7.min.css' %>    
+    <%= stylesheet '/css/social-buttons.css' %>    
     <%= stylesheet '/css/style.css' %>
     <%= javascript '/js/raphael.2.1.0.min.js' %>
     <%= javascript '/js/justgage.1.0.1.min.js' %>
@@ -17,7 +20,7 @@
       <div class="container">
         <div class="navbar">
           <div class="navbar-inner">
-            <a href="" class="brand">意識メーターβ</a>
+            <a href="/" class="brand">意識メーターβ</a>
             <ul class="nav">
               <li class="active">
                 <a href="">HOME</a>
@@ -42,11 +45,9 @@
                   <li>
                     <a href="/auth/auth_twitter/">Twitterログイン</a>
                   </li>
-
                   <li>
                     <a href="/auth/auth_fb">facebookログイン</a>
                   </li>
-
                 </ul>
               </li>
             </ul>
@@ -57,7 +58,6 @@
           <%= content %>
           <div id="social_buttons">
             <div id="fb-root"></div><script src="http://connect.facebook.net/ja_JP/all.js#xfbml=1"></script><fb:like href="http://localhost:5000" send="true" layout="button_count" width="200" show_faces="true" font=""></fb:like>
-            <a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-lang="ja">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>  
             <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only.gif" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
             <g:plusone></g:plusone>
             <script type=”text/javascript”><br />
@@ -68,6 +68,7 @@
                   var s = document.getElementsByTagName(‘script’)[0]; s.parentNode.insertBefore(po, s);<br />
                 })();<br />
             </script>
+            <a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-lang="ja">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>  
           </div>
           </div> <!-- #content -->
           <div id="sidebar" class="span3">
@@ -99,9 +100,8 @@
         <div class="row">
           <div class="span9">
             <p class="muted credit">
-              powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a>
-              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and PRONTO高円寺店
-            </p>
+              powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a><br/>
+              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and <a href="http://umeyuki.net/archives/623">PRONTO高円寺店</a>
           </div>
           <div class="span3">
            <p class="muted credit">
