@@ -52,10 +52,9 @@ helper json => sub {
     JSON->new;
 };
 
-helper keywords => sub {
+helper get_keywords => sub {
     my ($self) = shift;
 
-    #TODO use redis
     my $keywords = eval $self->redis->get('keywords') || {};
     unless ( %$keywords ) {
         my $sql = <<SQL;
@@ -115,7 +114,7 @@ helper process => sub {
             my $user_id =
                 $self->create_user( $dbh,$user  ) || $self->user_id( $user );
             $entry_id = $self->create_entry( $dbh,$user_id, $ishiki, $used_keywords );
-#            $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
+            $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
             $txn->commit;
 
             # new ishiki
@@ -223,7 +222,7 @@ helper create_entry_keywords => sub {
     my ($self,$dbh,$entry_id,$user_id,$used_keywords) = @_;
 
     SQL::Maker->load_plugin('InsertMulti');
-    my $keywords = $self->keywords;
+    my $keywords = $self->get_keywords;
 
     # insert multi用に配列を作成
     my @rows;
@@ -236,6 +235,7 @@ helper create_entry_keywords => sub {
     }
 
     my ( $sql, @binds ) = $self->sb->insert_multi('entry_keywords', \@rows);
+
     my $sth = $dbh->prepare($sql);
     $sth->execute(@binds);
     $sth->finish;
@@ -354,7 +354,7 @@ get '/' => sub {
     my $error = $self->req->param('error');
     $self->render( error => $error );
 
-    $self->{keywords} = $self->keywords;    
+    $self->{keywords} = $self->get_keywords;    
     my $session = Plack::Session->new( $self->req->env );
 
     my ( $screen_name, $user, $profile, $ishiki, $used_keywords );
@@ -429,7 +429,7 @@ get '/auth/auth_twitter' => sub {
             name              => $tw_user->{screen_name},
             profile_image_url => $tw_user->{profile_image_url}
         };
-        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
+        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
         my $entry_id = $self->process($user,$ishiki,$used_keywords);
         
         # $session->set( 'user'        => $user );
@@ -529,7 +529,7 @@ get '/auth/auth_fb' => sub {
         }
         push @messages,$user->{profile};
 
-        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->keywords );
+        my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
         
         $session->set( 'user'        => $user );
         $session->set( 'ishiki'      => $ishiki );
@@ -560,7 +560,7 @@ get '/popular' => sub {
     my @popular_ids = $redis->zrevrange('popular',0,9);
     my @popular_entries;
     for my $entry_id ( @popular_ids ) {
-        push @popular_entries,$self->show($entry_id);
+        push @popular_entries,$self->get_entry($entry_id);
     }
     $self->stash->{content} = \@popular_entries;
     $self->render('popular');
@@ -573,12 +573,13 @@ get '/recent' => sub {
     my @recent_ids = $self->redis->lrange('recent',0,49);
     my @recent_entries;
     for my $entry_id ( @recent_ids ) {
-        push @recent_entries,$self->show($entry_id);
+        push @recent_entries,$self->get_entry($entry_id);
     }
     $self->stash->{content} = \@recent_entries;
     $self->render('recent');
 };
 
+# entry page
 get '/:entry_id' => sub {
     my $self = shift;
 
@@ -588,26 +589,25 @@ get '/:entry_id' => sub {
     my $redis = $self->redis;
     $redis->zincrby('popular',1, $entry_id );
     
-    $self->stash->{content} = $self->show($entry_id);
+    $self->stash->{content} = $self->get_entry($entry_id);
     $self->render('show');
 };
 
-helper show => sub {
+helper get_entry => sub {
     my ( $self, $entry_id) = @_;
     my $sql = <<SQL;
 SELECT
-  users.name AS name ,
-  users.profile_image_url AS image_url,
-  entries.ishiki AS ishiki,
-  entries.html AS html
+  u.name AS name ,
+  u.profile_image_url AS image_url,
+  e.ishiki AS ishiki,
+  e.html AS html
 FROM
-  entries
+  entries e
 INNER JOIN
-  users ON entries.user_id = users.id
+  users u ON e.user_id = u.id
 WHERE
-  entries.id = ?
+  e.id = ?
 SQL
-
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$entry_id);
@@ -625,13 +625,46 @@ SQL
         );
     }
     $dbh->disconnect;
+    my $entry_keywords = $self->get_entry_keywords($entry_id);
+    $result{keywords} = $entry_keywords;
     \%result;
 };
 
+helper get_entry_keywords => sub  {
+    my ($self,$entry_id) = @_;
+
+    #TODO 関連アイテム
+    my $sql = <<SQL;
+SELECT
+  k.name AS name,k.value AS value
+FROM
+  entry_keywords ek
+INNER JOIN
+  keywords k ON k.id = ek.keyword_id
+WHERE
+  ek.entry_id = ?
+SQL
+
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$entry_id);
+    $sth->execute or croak $sth->errstr;
+
+    my @result;
+    my $rows = $sth->fetchall_arrayref( {} );
+    $sth->finish;    
+    for my $row ( @{$rows}) {
+        push @result,{ name => $row->{name}, value => $row->{value} };
+    }
+    \@result;
+};
+
+# keyword辞典
+    
 get '/keyword/:name' => sub {
     my $self = shift;
 
-    my $content = $self->keyword($self->param('name'));
+    my $content = $self->get_keyword($self->param('name'));
     $self->redirect_to('/') unless keys %$content > 0;
 
     $self->stash->{content} = $content;
@@ -639,16 +672,17 @@ get '/keyword/:name' => sub {
 
 };
 
-helper keyword => sub {
+helper get_keyword => sub {
     my ($self,$name) = @_;
 
     my $sql = <<SQL;
 SELECT
-  id,name,description,amazon_url
+  id,name,description
 FROM
   keywords
 WHERE name = ?
 SQL
+
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$name);

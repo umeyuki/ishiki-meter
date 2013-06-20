@@ -42,7 +42,7 @@ create table if not exists entries  (
 create table if not exists entry_keywords (
     id integer primary key autoincrement,
     entry_id integer not null,
-    use_id integer not null,
+    user_id integer not null,
     keyword_id integer not null,
     created datetime default current_timestamp,
     updated datetime default current_timestamp,

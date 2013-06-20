@@ -18,7 +18,13 @@
 <p>意識の高い発言</p>
 <div class="hero-unit">
   <ul class="tag01">
-    <%= Mojo::ByteStream->new($content->{html}) %>
+% if ( my @keywords = @{$content->{keywords}} ) {   
+%     for my $keyword ( @keywords ) {
+    <li class="rank<%= $keyword->{value} %>"> <a href="/keyword/<%= $keyword->{name} %>" ><%= $keyword->{name} %></a></li>
+%     }
+% } else {
+    <p>意識の高い発言はありません....</p>
+% }
   </ul>
 </div>
 
