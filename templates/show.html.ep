@@ -1,13 +1,14 @@
 % layout 'wrapper';
 % title '意識メーター';
 
-% if ( keys %{$content} > 0 ) {
-<p><img src="<%=  $content->{profile_image_url} %>"/><%= $content->{name} %>さんの意識調査</p>
+% my $entry = $content->{$entry_id};
+% if ( $entry ) {
+<p><img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>さんの意識調査</p>
 <div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
 <script>
     var g = new JustGage({
         id: "gauge",
-        value: <%= $content->{ishiki} %>,
+        value: <%= $entry->{ishiki} %>,
         min: 0,
         max: 1000,
         title: "意識の高さ"
@@ -17,7 +18,7 @@
 <p>意識の高い発言</p>
 <div class="hero-unit">
   <ul class="tag01">
-% if ( my @keywords = @{$content->{keywords}} ) {   
+% if ( my @keywords = @{$entry->{keywords}} ) {   
 %     for my $keyword ( @keywords ) {
     <li class="rank<%= $keyword->{value} %>"> <a href="/keyword/<%= $keyword->{name} %>" ><%= $keyword->{name} %></a></li>
 %     }

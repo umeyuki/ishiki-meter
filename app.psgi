@@ -560,7 +560,7 @@ get '/popular' => sub {
     my @popular_ids = $redis->zrevrange('popular',0,9);
     my @popular_entries;
     for my $entry_id ( @popular_ids ) {
-        push @popular_entries,$self->get_entry($entry_id);
+        push @popular_entries,$self->get_entries($entry_id);
     }
     $self->stash->{content} = \@popular_entries;
     $self->render('popular');
@@ -573,10 +573,9 @@ get '/recent' => sub {
     my @recent_ids = $self->redis->lrange('recent',0,49);
     my @recent_entries;
     for my $entry_id ( @recent_ids ) {
-        push @recent_entries,$self->get_entry($entry_id);
+        push @recent_entries,$self->get_entries($entry_id);
     }
     $self->stash->{entries} = \@recent_entries;
-    warn Dumper @recent_entries;
     $self->render('recent');
 };
 
@@ -590,73 +589,91 @@ get '/:entry_id' => sub {
     my $redis = $self->redis;
     $redis->zincrby('popular',1, $entry_id );
     
-    $self->stash->{content} = $self->get_entry($entry_id);
+    $self->stash->{content} = $self->get_entries($entry_id);
     $self->render('show');
 };
 
-helper get_entry => sub {
-    my ( $self, $entry_id) = @_;
-    my $sql = <<SQL;
-SELECT
-  u.name AS name ,
-  u.profile_image_url AS image_url,
-  e.ishiki AS ishiki,
-  e.html AS html
-FROM
-  entries e
-INNER JOIN
-  users u ON e.user_id = u.id
-WHERE
-  e.id = ?
-SQL
+helper get_entries => sub {
+    my ( $self, $entry_ids ) = @_;
+
+    unless ( 'ARRAY' eq ref $entry_ids ) {
+        $entry_ids = [$entry_ids];
+    }
+
+    my $stmt = $self->sb('select');
+    my $condition = $self->sb('condition');
+
+
+    $stmt->add_select('e.id' => 'entry_id');
+    $stmt->add_select('e.ishiki' => 'ishiki');
+    $stmt->add_select('u.name' => 'user_name');
+    $stmt->add_select('u.profile_image_url' => 'image_url');
+
+    $stmt->add_join(
+        [ 'entries', 'e' ] => {
+            type      => 'inner',
+            table     => 'users',
+            alias     => 'u',
+            condition => 'e.user_id  = u.id'
+        }
+    );
+    
+    $condition->add( entry_id => $entry_ids );
+    $stmt->set_where($condition);
+
+    my $sql = $stmt->as_sql;
+    my @binds = $stmt->bind;
+
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
-    $sth->bind_param(1,$entry_id);
-    $sth->execute or croak $sth->errstr;
+
+    $sth->execute(@binds) or croak $sth->errstr;
     my $rows = $sth->fetchall_arrayref( {} );
     $sth->finish;    
 
     my %result = ();    
     for my $row ( @$rows ) {
-        %result = (
-            name               => $row->{name},
+        my $entry_id = $row->{entry_id};
+        $result{$entry_id} = {
+            name               => $row->{user_name},
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
-            html               => $row->{html}
-        );
+            keywords           => $self->get_entry_keyword($entry_id)
+        } unless $result{entry_id};
     }
     $dbh->disconnect;
-    my $entry_keywords = $self->get_entry_keywords($entry_id);
-    $result{keywords} = $entry_keywords;
+
     \%result;
 };
 
-helper get_entry_keywords => sub  {
+helper get_entry_keyword => sub  {
     my ($self,$entry_id) = @_;
 
-    #TODO 関連アイテム
+
     my $sql = <<SQL;
 SELECT
-  k.name AS name,k.value AS value
+  k.name AS name ,k.value AS value
 FROM
   entry_keywords ek
 INNER JOIN
-  keywords k ON k.id = ek.keyword_id
+  keywords k
+ON
+  k.id = ek.keyword_id  
 WHERE
   ek.entry_id = ?
 SQL
-
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$entry_id);
     $sth->execute or croak $sth->errstr;
 
+    my $rows = $sth->fetchall_arrayref({});
     my @result;
-    my $rows = $sth->fetchall_arrayref( {} );
-    $sth->finish;    
-    for my $row ( @{$rows}) {
-        push @result,{ name => $row->{name}, value => $row->{value} };
+    for my $row ( @$rows ) {
+        push @result, { name => $row->{name}, value => $row->{value}};
     }
+    
+    $dbh->disconnect;
     \@result;
 };
 
