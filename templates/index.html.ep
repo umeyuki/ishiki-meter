@@ -31,9 +31,11 @@
 % } else {
 <div class="hero-unit">
     <h2>意識メーターとは?</h2>
-    <p class="lead">TwitterやFacebookの情報を基に意識の高さを調べるウェブサービスです</p>
-    <button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button>    
-    <button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button>
+    <p class="lead">TwitterやFacebookの情報から、意識の高さを調べるウェブサービスです</p>
+    <p class="lead">さあ!意識の高さを調べよう!</p>
+    <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
+    <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a>
+    <p>※ アプリ連携によって勝手に発言することはありません</p>
 </div>
 <div class="row">
   <div class="marketing">
