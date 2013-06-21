@@ -32,27 +32,34 @@
 <div class="hero-unit">
     <h2>意識メーターとは?</h2>
     <p class="lead">TwitterやFacebookの情報から、意識の高さを調べるウェブサービスです</p>
-    <p class="lead">さあ!意識の高さを調べよう!</p>
-    <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
-    <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a>
-    <p>※ アプリ連携によって勝手に発言することはありません</p>
+    <!-- <p> -->
+    <!--   <a class="btn btn-primary btn-large"> -->
+    <!--     Learn more -->
+    <!--   </a> -->
+    <!-- </p> -->
+    <div id="oauth_buttons">
+      <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
+      <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a>
+      <p><em><small>※ アプリ連携によって勝手に発言することはありません</small></em></p>
+    </div>
 </div>
 <div class="row">
   <div class="marketing">
+    <h2>例えばこんな言葉に反応します</h2>
     <div class="span3">
-      <h3>夢</h3>
-      デュアルライフ 自給自足 プロ 世界一 経済的自由
-      アーユルヴェーダ ゴールドカラー 副業 不労所得
+      <h3>夢について</h3>
+      デュアルライフ 自給自足   経済的自由
+      ゴールドカラー 不労所得 
     </div>
     <div class="span3">
-      <h3>自分のこと</h3>
-       テレビを持ってない 早寝早起き トイレ掃除 複眼的思考
-      寝てない ToDo タスク 
+      <h3>自分について</h3>
+      テレビを持ってない 早寝早起き 
+      寝てない 物を持たない生活 インターン
     </div>
     <div class="span3">
-      <h3>理想</h3>
-      ノマド 自給自足 ベーシックインカム 物を持たない生活
-      感謝      
+      <h3>理想について</h3>
+      ノマド 自給自足 ベーシックインカム 起業
+       アーユルヴェーダ  断捨離
     </div>
   </div>
 </div>

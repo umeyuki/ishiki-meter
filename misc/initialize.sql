@@ -123,4 +123,9 @@ INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('清貧',1,
 INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('テレビ持ってない',6,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
 INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('マーフィーの法則',4,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
 INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('経済的自由',4,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
+INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('TED',6,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
+INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('物を持たない生活',8,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
+INSERT INTO keywords ('name', 'value', 'created', 'updated') VALUES ('塩麹',3,'2013-04-02 21:00:00', '2013-04-02 21:00:00');
+
+
 

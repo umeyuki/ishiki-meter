@@ -44,3 +44,7 @@ body {
 .container .credit {
     margin: 20px 0;
 }
+
+#oauth_buttons {
+    margin-top:25px;
+}

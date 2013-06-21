@@ -575,7 +575,8 @@ get '/recent' => sub {
     for my $entry_id ( @recent_ids ) {
         push @recent_entries,$self->get_entry($entry_id);
     }
-    $self->stash->{content} = \@recent_entries;
+    $self->stash->{entries} = \@recent_entries;
+    warn Dumper @recent_entries;
     $self->render('recent');
 };
 

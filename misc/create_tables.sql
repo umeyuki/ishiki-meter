@@ -17,7 +17,8 @@ create table if not exists keywords (
     value integer default 5,
     created datetime default current_timestamp,
     updated datetime default current_timestamp,
-    deleted text
+    deleted text,
+    UNIQUE(name)
 );
 
 create table if not exists related_products (
