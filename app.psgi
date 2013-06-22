@@ -569,13 +569,8 @@ get '/popular' => sub {
 get '/recent' => sub {
     my $self = shift;
 
-    #
-    my @recent_ids = $self->redis->lrange('recent',0,49);
-    my @recent_entries;
-    for my $entry_id ( @recent_ids ) {
-        push @recent_entries,$self->get_entries($entry_id);
-    }
-    $self->stash->{entries} = \@recent_entries;
+    my @entry_ids = $self->redis->lrange('recent',0,8);
+    $self->stash->{entries} = $self->get_entries(\@entry_ids);
     $self->render('recent');
 };
 
@@ -639,7 +634,7 @@ helper get_entries => sub {
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
             keywords           => $self->get_entry_keyword($entry_id)
-        } unless $result{entry_id};
+        };
     }
     $dbh->disconnect;
 

@@ -85,15 +85,38 @@
           <div id="sidebar" class="span3">
             <h3>広告枠</h3>
             <div class="hero-unit"></div>
-            <h3>人気キーワード</h3>
-            <ul>
-              <ol>登山</ol>
-              <ol>起業</ol>
-              <ol>デュアルライフ</ol>
-              <ol>ノマド</ol>
-            </ul>
-            <h3>お知らせ</h3>
-            <h5>現在 3,900人のユーザが意識メーターを使っています</h5>
+            <table class='table table-bordered'>
+              <tr class="info">
+                <td>
+                  人気キーワード
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  起業
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  ノマド
+                </td>
+              </tr>
+              <tr>
+                <td>登山
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  経済学部
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  インターン
+                </td>
+              </tr>
+            </table>
+            <h5>現在 3,900人のユーザが<br/>意識メーターを使っています</h5>
 
             <a href="http://twitter.com/umeyuki" class="twitter-follow-button" data-show-count="false" data-lang="ja">Follow @umeyuki</a><br />
             <script src="http://platform.twitter.com/widgets.js" type="text/javascript"></script>
