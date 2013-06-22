@@ -31,12 +31,15 @@
 % } else {
 <div class="hero-unit">
     <h2>意識メーターとは?</h2>
-    <p class="lead">TwitterやFacebookの情報から、意識の高さを調べるウェブサービスです</p>
+    <p class="lead">TwitterやFacebookの情報から、意識の高さを調べるウェブサービスです(:</p>
     <!-- <p> -->
     <!--   <a class="btn btn-primary btn-large"> -->
     <!--     Learn more -->
     <!--   </a> -->
     <!-- </p> -->
+    <p class="lead">
+      ソーシャルアカウントを使って意識の高さを調べる
+    </p>
     <div id="oauth_buttons">
       <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
       <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a>
@@ -54,12 +57,12 @@
     <div class="span3">
       <h3>自分について</h3>
       テレビを持ってない 早寝早起き 
-      寝てない 物を持たない生活 インターン
+      寝てない 物を持たない生活 起業したい
     </div>
     <div class="span3">
       <h3>理想について</h3>
-      ノマド 自給自足 ベーシックインカム 起業
-       アーユルヴェーダ  断捨離
+      ノマド 自給自足 ベーシックインカム
+       アーユルヴェーダ  断捨離 収益型住宅
     </div>
   </div>
 </div>

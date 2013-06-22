@@ -255,13 +255,25 @@ under sub {
     my $self = shift;
 
     # 最も使われているランキング 1週間ごとに更新が望ましい
-    $self->{keyword_ranking} = $self->keyword_ranking;    
+#    $self->{keyword_ranking} = $self->keyword_ranking;    
+
     # マンスリー意識ランキング entry_idとuser_nameとishikiを表示
-    $self->{entry_ranking}   = $self->entry_ranking;
+
+    # ユーザ数
+    my $user_count = $self->get_user_count;
+
+    $self->stash->{user_count}   = $user_count;
     
     1;
 };
 
+helper comma => sub {
+    my $num = $_[1];
+    $num = reverse $num;
+    $num =~ s/(\d\d\d)(?=\d)(?!\d\.)/$1,/g;
+    return scalar reverse $num;
+};
+    
 helper keyword_ranking => sub {
     my $self = shift;
 
@@ -304,48 +316,34 @@ helper entry_ranking => sub {
     my $self = shift;
 
     my $redis = $self->redis;
-    my @rankin_entries =  $redis->zrevrange('entry_ranking',0,9);
-    return;
-    return unless @rankin_entries;
+    my @rankin_entry_ids =  $redis->zrevrange('entry_ranking',0,9);
+
+    return unless @rankin_entry_ids;
 
     my %ranking;
     my $rank = 1;
-    for my $entry_id ( @rankin_entries ) {
+    for my $entry_id ( @rankin_entry_ids ) {
         $ranking{$entry_id} = $rank;
         $rank++;
     }
 
-    my $stmt = $self->sb('select');
-    my $condition = $self->sb('condition');
-
-    $stmt->add_select('u.name')->add_select('e.ishiki')->add_select('e.id');
-    $stmt->add_join( [ 'entries','e' ]=> {type => 'left', table => 'users u', condition => ['u.id = e.user_id']});    
-    $condition->add( id => \@rankin_entries );
-    $stmt->set_where($condition);
-
-    my $sql   = $stmt->as_sql;
-    my @binds = $stmt->bind;
+    my $result = $self->get_entries(\@rankin_entry_ids);
     
-    my $dbh = $self->dbh;
-    my $sth = $dbh->prepare($sql);
-    $sth->execute(@binds);
+    return \%ranking,$result;
+};
 
-    my %result;
-    my $rows = $sth->fetchall_arrayref({});
-    for my $row ( @$rows ) {
-        my $entry_id  = $row->{'e.id'};
-        my $name      = $row->{'u.name'};
-        my $ishiki    = $row->{'e.ishiki'};
-        my $rank      = $ranking{$entry_id};
-        
-        $result{$rank} = {
-            id      => $entry_id,
-            name    => $name,
-            ishiki  => $ishiki
-        };
-    }
+helper get_user_count => sub {
+    my $self = shift;
+
+    my $dbh =$self->dbh;
+
+    my $sql = <<SQL;
+SELECT COUNT(*) FROM users;
+SQL
+    my ($count)  = $dbh->selectrow_array($sql);
     
-    \%result;
+    $dbh->disconnect;
+    $count;
 };
 
 get '/' => sub {
