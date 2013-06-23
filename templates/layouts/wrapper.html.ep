@@ -30,19 +30,28 @@
                 </button>
                 <div class="nav-collapse collapse">
                   <ul class="nav">
+                    % if ( '/' eq $request_uri ) {
                     <li class="active">
+                    % } else {
+                    <li class="">
+                    % }
                       <a href="/">Home</a>
                     </li>
+                    % if ( '/recent' eq $request_uri ) {
+                    <li class="active">
+                    % } else {
                     <li class="">
+                    % }
                       <a href="/recent">新着意識</a>
                     </li>
+                    % if ( '/legent' eq $request_uri ) {
+                    <li class="active">
+                    % } else {
                     <li class="">
-                      <a href="/popular">ランキング</a>
-                    </li>
-                    <li class="">
+                    % }
                       <a href="/legend">殿堂入り意識</a>
                     </li>
-                  </ul>
+                   </ul>
                   <ul class="nav pull-right">
                     <li class="dropdown">
                       <a href="" class="dropdown-toggle" data-toggle="dropdown">
@@ -68,7 +77,7 @@
           <div id="contents" class="span9">
             <%= content %>
             <!-- <div id="social_buttons" style="float:right"> -->
-            <!--   <div id="fb-root"></div><script src="http://connect.facebook.net/ja_JP/all.js#xfbml=1"></script><fb:like href="http://localhost:5000" send="true" layout="button_count" width="200" show_faces="true" font=""></fb:like> -->
+            <!--   <div id="fb-root"></div><script src="http://connect.facebook.net/ja_JP/all.js#xfbml=1"></script><fb:like href="<%= $base_url %>" send="true" layout="button_count" width="200" show_faces="true" font=""></fb:like> -->
             <!--   <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only.gif" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script> -->
             <!--   <g:plusone></g:plusone> -->
             <!--   <script type=”text/javascript”><br /> -->
@@ -83,55 +92,25 @@
             <!-- </div> -->
          </div> <!-- #content -->
           <div id="sidebar" class="span3">
-            <h3>広告枠</h3>
             <div class="hero-unit"></div>
-            <table class='table table-bordered'>
+            <table class='table table-bordered table-hover'>
               <tr class="info">
                 <td colspan="2">
                   人気意識ワード
                 </td>
               </tr>
+              % for my $keyword ( @$keyword_ranking) {
               <tr>
                 <td>
-                  起業
+                  <a href="<%= $base_url %><%= $keyword->{name} %>"><%= $keyword->{name} %></a>
                 </td>
                 <td>
-                  <small>新しい事業をもとに会社を...</small>
+                  <small><%= $keyword->{description} %>キーワードの説明です</small>
                 </td>
                </tr>
-              <tr>
-                <td>
-                  ノマド
-                </td>
-               <td>
-                  <small>新しい事業をもとに会社を...</small>
-                </td>  
-              </tr>
-              <tr>
-                <td>
-                  登山
-                </td>
-               <td>
-                  <small>新しい事業をもとに会社を...</small>
-                </td>
-               </tr>
-              <tr>
-                <td>
-                  経済学部
-                </td>
-              <td>
-                <small>新しい事業をもとに会社を...</small>
-              </td>
-              </tr>
-              <tr>
-                <td>
-                  インターン
-                </td>
-                <td>
-                <small>新しい事業をもとに会社を...</small>
-                </td>
-              </tr>
+              % }
             </table>
+            
             <h5>現在のユーザ数<%= comma $user_count %>人</h5>
 
             <span>開発者</span>

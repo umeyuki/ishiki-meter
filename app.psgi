@@ -116,14 +116,14 @@ helper process => sub {
             $entry_id = $self->create_entry( $dbh,$user_id, $ishiki, $used_keywords );
             $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
             $txn->commit;
-
+            
             # new ishiki
             $redis->lpush('recent',$entry_id);
             # user ranking
             $redis->zadd('entry_ranking', $ishiki, $entry_id);
             # keyword ranking
             $redis->zincrby('keyword_ranking', 1, $used_keywords->{$_}->{id} ) for keys %$used_keywords;
-
+            
             return $entry_id;
         }
         $dbh->disconnect;
@@ -254,18 +254,46 @@ sub startup {
 under sub {
     my $self = shift;
 
+    $self->stash->{base_url} = $config->{base_url};
+    
     # 最も使われているランキング 1週間ごとに更新が望ましい
-#    $self->{keyword_ranking} = $self->keyword_ranking;    
+    $self->stash->{keyword_ranking} = $self->keyword_ranking;    
 
     # マンスリー意識ランキング entry_idとuser_nameとishikiを表示
 
     # ユーザ数
     my $user_count = $self->get_user_count;
-
     $self->stash->{user_count}   = $user_count;
+
+    $self->stash->{request_uri} = $self->req->env->{REQUEST_URI};
+
+
+    # 最高位
+    my $redis = $self->redis;
+    my $top_entry_id = shift $redis->zrevrange('entry_ranking',0,0);
+
+    # 意識ランキング
+#    $self->stash->{entry_ranking} = $self->entry_ranking;
+    
+    $self->stash->{top_entry_id} = $top_entry_id;
+    $self->stash->{top_ishiki} = $self->get_ishiki($top_entry_id) || 500;
     
     1;
 };
+
+helper get_ishiki => sub {
+    my ($self,$entry_id) = @_;
+    
+    my $dbh =$self->dbh;
+    warn Dumper $entry_id;
+    my $sql = <<SQL;
+SELECT ishiki FROM entries WHERE id = ?;
+SQL
+    my ($ishiki)  = $dbh->selectrow_array($sql,{},$entry_id);
+    
+    $ishiki;
+};
+
 
 helper comma => sub {
     my $num = $_[1];
@@ -290,46 +318,79 @@ helper keyword_ranking => sub {
         $rank++;
     }
 
-    my ( $sql,@binds ) = $self->sb->select('keywords',['id','name'],{ id => \@rankin_keywords},{});
+    my ( $sql,@binds ) = $self->sb->select('keywords',['id','name','description'],{ id => \@rankin_keywords},{});
     
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
     $sth->execute(@binds);
     my $rows = $sth->fetchall_arrayref({});
 
-    my %result;
+    my @result;
     for my $row ( @$rows ) {
         my $keyword_id  = $row->{id};
         my $name        = $row->{name};
+        my $description = $row->{description} || '';
         my $rank        = $ranking{$keyword_id};
-        $result{$rank} = {
-            id      => $keyword_id,
-            name    => $name,
+        push @result, {
+            id          => $keyword_id,
+            name        => $name,
+            description => length($description) >= 9 ? sprintf( " %s..", substr( $description, 0, 9) ) : $description,
+            rank        => $rank
         };
     }
+    @result = sort {$a->{rank} <=> $b->{rank} } @result;
+    
+    # 配列で並べ変え
+    
+    
     $sth->finish;
     $dbh->disconnect;
-    \%result;
+    \@result;
 };
 
 helper entry_ranking => sub {
     my $self = shift;
 
     my $redis = $self->redis;
-    my @rankin_entry_ids =  $redis->zrevrange('entry_ranking',0,9);
+    my @rankin_entries = $redis->zrevrange('entry_ranking',0,9);
 
-    return unless @rankin_entry_ids;
+    return unless @rankin_entries;
 
     my %ranking;
     my $rank = 1;
-    for my $entry_id ( @rankin_entry_ids ) {
+    for my $entry_id ( @rankin_entries ) {
         $ranking{$entry_id} = $rank;
         $rank++;
     }
 
-    my $result = $self->get_entries(\@rankin_entry_ids);
+    my ( $sql,@binds ) = $self->sb->select('keywords',['id','name','description'],{ id => \@rankin_entries},{});
     
-    return \%ranking,$result;
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute(@binds);
+    my $rows = $sth->fetchall_arrayref({});
+
+    my @result;
+    for my $row ( @$rows ) {
+        my $keyword_id  = $row->{id};
+        my $name        = $row->{name};
+        my $description = $row->{description} || '';
+        my $rank        = $ranking{$keyword_id};
+        push @result, {
+            id          => $keyword_id,
+            name        => $name,
+            description => length($description) >= 9 ? sprintf( " %s..", substr( $description, 0, 9) ) : $description,
+            rank        => $rank
+        };
+    }
+    @result = sort {$a->{rank} <=> $b->{rank} } @result;
+    
+    # 配列で並べ変え
+    
+    
+    $sth->finish;
+    $dbh->disconnect;
+    \@result;
 };
 
 helper get_user_count => sub {
@@ -568,8 +629,10 @@ get '/recent' => sub {
     my $self = shift;
 
     my @entry_ids = $self->redis->lrange('recent',0,8);
+    
     $self->stash->{entries} = $self->get_entries(\@entry_ids);
     $self->render('recent');
+
 };
 
 # entry page
@@ -582,7 +645,7 @@ get '/:entry_id' => sub {
     my $redis = $self->redis;
     $redis->zincrby('popular',1, $entry_id );
     
-    $self->stash->{content} = $self->get_entries($entry_id);
+    $self->stash->{entries} = $self->get_entries($entry_id);
     $self->render('show');
 };
 
@@ -624,10 +687,12 @@ helper get_entries => sub {
     my $rows = $sth->fetchall_arrayref( {} );
     $sth->finish;    
 
-    my %result = ();    
+    my @result;
+    
     for my $row ( @$rows ) {
         my $entry_id = $row->{entry_id};
-        $result{$entry_id} = {
+        push @result, {
+            entry_id           => $entry_id,
             name               => $row->{user_name},
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
@@ -635,8 +700,7 @@ helper get_entries => sub {
         };
     }
     $dbh->disconnect;
-
-    \%result;
+    \@result;
 };
 
 helper get_entry_keyword => sub  {
