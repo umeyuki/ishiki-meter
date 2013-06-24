@@ -352,44 +352,22 @@ helper entry_ranking => sub {
     my $self = shift;
 
     my $redis = $self->redis;
-    my @rankin_entries = $redis->zrevrange('entry_ranking',0,9);
-
-    return unless @rankin_entries;
-
+    
+    my @entry_ids = $redis->zrevrange('entry_ranking',0,9);
+    my $entries = $self->get_entries(\@entry_ids);
+    
     my %ranking;
-    my $rank = 1;
-    for my $entry_id ( @rankin_entries ) {
+    my $rank = 1;    
+    for my $entry_id ( @entry_ids ) {
         $ranking{$entry_id} = $rank;
         $rank++;
     }
-
-    my ( $sql,@binds ) = $self->sb->select('keywords',['id','name','description'],{ id => \@rankin_entries},{});
     
-    my $dbh = $self->dbh;
-    my $sth = $dbh->prepare($sql);
-    $sth->execute(@binds);
-    my $rows = $sth->fetchall_arrayref({});
-
     my @result;
-    for my $row ( @$rows ) {
-        my $keyword_id  = $row->{id};
-        my $name        = $row->{name};
-        my $description = $row->{description} || '';
-        my $rank        = $ranking{$keyword_id};
-        push @result, {
-            id          => $keyword_id,
-            name        => $name,
-            description => length($description) >= 9 ? sprintf( " %s..", substr( $description, 0, 9) ) : $description,
-            rank        => $rank
-        };
+    for my $entry ( @$entries ) {
+        $result[$ranking{$entry->{entry_id}} - 1] = $entry;
     }
-    @result = sort {$a->{rank} <=> $b->{rank} } @result;
     
-    # 配列で並べ変え
-    
-    
-    $sth->finish;
-    $dbh->disconnect;
     \@result;
 };
 
@@ -610,19 +588,11 @@ get '/logout' => sub {
     $self->redirect_to('/');
 };
 
-get '/popular' => sub {
+get '/ranking' => sub {
     my $self = shift;
-
-    #
-    my $redis = $self->redis;
     
-    my @popular_ids = $redis->zrevrange('popular',0,9);
-    my @popular_entries;
-    for my $entry_id ( @popular_ids ) {
-        push @popular_entries,$self->get_entries($entry_id);
-    }
-    $self->stash->{content} = \@popular_entries;
-    $self->render('popular');
+    $self->stash->{entries} = $self->entry_ranking;
+    $self->render('ranking');
 };
 
 get '/recent' => sub {

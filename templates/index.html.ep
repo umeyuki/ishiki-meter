@@ -48,21 +48,21 @@
 </div>
 <div class="row">
   <div class="marketing">
-    <h2>こんな言葉に反応します</h2>
+    <h2>こんな言葉は意識が高い(かもしれない)</h2>
     <div class="span3">
       <h3>夢について</h3>
-      デュアルライフ 自給自足   経済的自由
-      ゴールドカラー 不労所得 
+      <a href="<%= $base_url %>/デュアルライフ" >デュアルライフ</a> <a href="<%= $base_url %>/自給自足" >自給自足</a>   <a href="<%= $base_url %>/経済的自由" >経済的自由</a>
+      <a href="<%= $base_url %>/ゴールドカラー" >ゴールドカラー</a> <a href="<%= $base_url %>/不労所得" >不労所得</a>
     </div>
     <div class="span3">
       <h3>自分について</h3>
-      テレビを持ってない 早寝早起き 
-      寝てない 物を持たない生活 起業したい
+      <a href="<%= $base_url %>/テレビを持ってない" >テレビを持ってない</a> <a href="<%= $base_url %>/早寝早起き" >早寝早起き</a> 
+      <a href="<%= $base_url %>/寝てない" >寝てない</a> <a href="<%= $base_url %>/物を持たない生活" >物を持たない生活</a> <a href="<%= $base_url %>/起業" >起業</a>
     </div>
     <div class="span3">
       <h3>理想について</h3>
-      ノマド 自給自足 ベーシックインカム
-       アーユルヴェーダ  断捨離 収益型住宅
+      <a href="<%= $base_url %>/ノマド" >ノマド</a> <a href="<%= $base_url %>/自給自足" >自給自足</a> <a href="<%= $base_url %>/ベーシックインカム" >ベーシックインカム</a>
+       <a href="<%= $base_url %>/アーユルヴェーダ" >アーユルヴェーダ</a>  <a href="<%= $base_url %>/断捨離" >断捨離</a> <a href="<%= $base_url %>/収益型住宅" >収益型住宅</a>
     </div>
   </div>
 </div>
