@@ -29,26 +29,33 @@
 </div>
 
 % } else {
-<div class="hero-unit">
-    <h2>意識メーターとは?</h2>
-    <p class="lead">TwitterやFacebookの情報から、意識の高さを調べるウェブサービスです(:</p>
-    <!-- <p> -->
-    <!--   <a class="btn btn-primary btn-large"> -->
-    <!--     Learn more -->
-    <!--   </a> -->
-    <!-- </p> -->
-    <p class="lead">
-      ソーシャルアカウントを使って意識の高さを調べる
-    </p>
-    <div id="oauth_buttons">
-      <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
-      <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a>
-      <p><em><small>※ アプリ連携によって勝手に発言することはありません</small></em></p>
+<div class="row">
+  <div class="span3" id="movie">
+    <object width="270" height="230">
+      <param name="allowfullscreen" value="true">
+      <param name="allowscriptaccess" value="always">
+      <param name="movie" value="http://www.youtube.com/v/DfW8dg0SdXI?autoplay=0&amp;loop=0&amp;rel=0">
+      <param name="wmode" value="transparent">
+      <embed src="http://www.youtube.com/v/DfW8dg0SdXI?autoplay=0&amp;loop=0&amp;rel=0" type="application/x-shockwave-flash" wmode="transparent" allowfullscreen="true" allowscriptaccess="always" width="270" height="230">
+    </object>
+  </div>
+  <div class="span6">  
+    <div class="hero-unit">
+      <p class="catch">「意識を測る・知る・上げる」<br/>意識メーター。</p>
+      <i class="icon-arrow-down"></i><small>ソーシャルアカウントを使って意識の高さを測る</small>
+      <div id="oauth_buttons">
+        <a href="/auth/auth_twitter/"><button class="btn btn-twitter"><i class="icon-twitter"></i>  | Connect with Twitter</button></a>
+<!--        <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a> -->
+      </div>
+      <div class="explain">
+        <em><small>※ 安全なTwitterアカウントを利用したログインをすることで Twitterの情報から、意識の高さを測れます。<br/>アプリ連携によって勝手に発言することはありません</small></em>
+      </div>
     </div>
+  </div>
 </div>
 <div class="row">
   <div class="marketing">
-    <h2>こんな言葉は意識が高い(かもしれない)</h2>
+    <h2>例えば...</h2>
     <div class="span3">
       <h3>夢について</h3>
       <a href="<%= $base_url %>/デュアルライフ" >デュアルライフ</a> <a href="<%= $base_url %>/自給自足" >自給自足</a>   <a href="<%= $base_url %>/経済的自由" >経済的自由</a>
@@ -66,13 +73,13 @@
     </div>
   </div>
 </div>
-<div class="row">
-  <div class="span4">
-    <a class="twitter-timeline" href="https://twitter.com/search?q=%23%E6%84%8F%E8%AD%98%E3%83%A1%E3%83%BC%E3%82%BF%E3%83%BC" data-widget-id="349495222604017664">Tweets about "#意識メーター"</a>
-    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-  </div>
+<div class="row" style="margin-top:35px">
   <div class="span5">
-    Facebook page
+    <a class="twitter-timeline" href="https://twitter.com/search?q=%23%E6%84%8F%E8%AD%98%E3%83%A1%E3%83%BC%E3%82%BF%E3%83%BC" data-widget-id="349495222604017664">Tweets about "#意識メーター"</a>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>   
+  </div>
+  <div class="span4">
+    <iframe src="//www.facebook.com/plugins/likebox.php?href=https%3A%2F%2Fwww.facebook.com%2Fishikimeter&amp;width=292&amp;height=590&amp;show_faces=true&amp;colorscheme=light&amp;stream=true&amp;show_border=true&amp;header=true&amp;appId=380952785358091" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:292px; height:590px;" allowTransparency="true"></iframe>
   </div>
   
 </div>

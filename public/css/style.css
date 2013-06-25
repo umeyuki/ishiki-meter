@@ -46,5 +46,22 @@ body {
 }
 
 #oauth_buttons {
-    margin-top:25px;
+    margin:5px 0px;
+}
+
+#movie {
+    margin-top:35px;
+}
+
+
+.catch {
+    font-weight: bold;
+    font-size: 28px;
+    line-height: 1.4em;
+    text-align: center;
+    color: #308F48;
+}
+
+.explain {
+    line-height: 1em;
 }
