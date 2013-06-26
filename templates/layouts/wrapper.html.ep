@@ -62,9 +62,6 @@
                         <li>
                           <a href="/auth/auth_twitter/">Twitterログイン</a>
                         </li>
-                        <li>
-                          <a href="/auth/auth_fb">facebookログイン</a>
-                        </li>
                       </ul>
                     </li>
                   </ul>
@@ -114,7 +111,7 @@
             <h5>現在のユーザ数</h5>
             <h2><%= comma $user_count %>人</h2>
 
-            <h5>開発者について</h5>
+            <h5>管理人について</h5>
             <div><a href="http://www.flickr.com/photos/68742489@N02/8347394773/" onclick="javascript:_gaq.push(['_trackEvent','outbound-widget','http://www.flickr.com']);" title="umeyuki by umeyuki1326, on Flickr"><img src="http://farm9.staticflickr.com/8330/8347394773_395fd389d6_s.jpg" width="75" height="75" alt="umeyuki"></a></div>
             <p>ブログを書いたりウェブサービスを開発しています(:</p>
             <a href="http://twitter.com/umeyuki" class="twitter-follow-button" data-show-count="false" data-lang="ja">Follow @umeyuki</a><br />
@@ -132,7 +129,8 @@
           <div class="span9">
             <p class="muted credit">
               powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a><br/>
-              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and <a href="http://umeyuki.net/archives/623">PRONTO高円寺店</a>
+              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and <a href="http://umeyuki.net/archives/623">PRONTO高円寺店</a><br/>
+              character designed by <a href="http://twitter.com/sonocomiso">@sonocomiso</a> 
           </div>
           <div class="span3">
             <p class="muted credit">

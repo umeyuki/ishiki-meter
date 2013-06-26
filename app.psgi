@@ -611,6 +611,9 @@ get '/:entry_id' => sub {
 
     my $entry_id = $self->param('entry_id');
 
+    return $self->render_not_found unless $entry_id =~ /\d+/;
+    
+    
     # popular
     my $redis = $self->redis;
     $redis->zincrby('popular',1, $entry_id );

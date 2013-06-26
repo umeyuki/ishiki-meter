@@ -65,3 +65,7 @@ body {
 .explain {
     line-height: 1em;
 }
+
+.advertisement {
+    margin: 0 auto;
+}
