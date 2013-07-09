@@ -59,13 +59,25 @@ body {
     font-size: 28px;
     line-height: 1.4em;
     text-align: center;
-    color: #308F48;
+    color: #000000;
 }
 
 .explain {
     line-height: 1em;
 }
 
-.advertisement {
-    margin: 0 auto;
+.advertisement li{
+    margin: 0 0 5px 60px;
+}
+
+div.rectangle {
+    margin: 20px 0;
+}
+
+dl.qa dd{
+    margin-bottom:10px;
+}
+
+h2,h3,h4,h5, {
+    border-left: 5px solid #ccc;
 }

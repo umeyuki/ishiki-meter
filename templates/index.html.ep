@@ -24,31 +24,50 @@
 <!--        <a href="/auth/auth_fb/"><button class="btn btn-facebook"><i class="icon-facebook"></i>  | Connect with Facebook</button></a> -->
       </div>
       <div class="explain">
-        <em><small>※ 安全なTwitterアカウントを利用したログインをすることで Twitterの情報から、意識の高さを測れます。<br/>アプリ連携によって勝手に発言することはありません</small></em>
+        <small>※ 安全なTwitterアカウントを利用したログインをすることで Twitterの情報から、意識の高さを測れます。<br/>アプリ連携によって勝手に発言することはありません。</small>
       </div>
     </div>
   </div>
 </div>
+<hr/>
 <div class="row">
   <div class="marketing">
     <h2>例えば...</h2>
     <div class="span3">
-      <h3>夢について</h3>
-      <a href="<%= $base_url %>/デュアルライフ" >デュアルライフ</a> <a href="<%= $base_url %>/自給自足" >自給自足</a>   <a href="<%= $base_url %>/経済的自由" >経済的自由</a>
-      <a href="<%= $base_url %>/ゴールドカラー" >ゴールドカラー</a> <a href="<%= $base_url %>/不労所得" >不労所得</a>
+      <div class="about">
+        <h3>夢について</h3>
+        <a href="/keyword/デュアルライフ" >デュアルライフ</a>    <a href="/keyword/経済的自由" >経済的自由</a>
+        <a href="/keyword/ゴールドカラー" >ゴールドカラー</a> <a href="/keyword/不労所得" >不労所得</a>
+        <div class="tweet">
+          夢について<a href="https:/twitter.com/share" class="twitter-share-button" data-text="夢はハワイとイビサのデュアルライフをするゴールドカラーになること。まずは経済的自由を得ることから始めようよ。不労所得は大事です。まじで。" data-lang="ja" data-size="large" data-related="ishikimeter" data-hashtags="意識メーター,夢">夢についてつぶやく</a>
+        </div>
+      </div>      
     </div>
     <div class="span3">
-      <h3>自分について</h3>
-      <a href="<%= $base_url %>/テレビを持ってない" >テレビを持ってない</a> <a href="<%= $base_url %>/早寝早起き" >早寝早起き</a> 
-      <a href="<%= $base_url %>/寝てない" >寝てない</a> <a href="<%= $base_url %>/物を持たない生活" >物を持たない生活</a> <a href="<%= $base_url %>/起業" >起業</a>
+      <div class="about">
+        <h3>自分について</h3>
+        <a href="/keyword/テレビを持ってない" >テレビを持ってない</a> <a href="/keyword/早寝早起き" >早寝早起き</a> 
+        <a href="/keyword/寝てない" >寝てない</a> <a href="/keyword/物を持たない生活" >物を持たない生活</a> <a href="/keyword/起業" >起業</a>
+      </div>
+      <div class="tweet">
+        自分について<a href="https:/twitter.com/share" class="twitter-share-button" data-text="物を持たない生活をしてる。テレビを持ってないから友達の会話についていけないのが辛いわ。早寝早起きを習慣づけてから寝てないから意味不明なツイートしちゃう。ごめんな..." data-lang="ja" data-size="large" data-related="ishikimeter" data-hashtags="意識メーター,自分">自分についてつぶやく</a>
+      </div>
     </div>
     <div class="span3">
-      <h3>理想について</h3>
-      <a href="<%= $base_url %>/ノマド" >ノマド</a> <a href="<%= $base_url %>/自給自足" >自給自足</a> <a href="<%= $base_url %>/ベーシックインカム" >ベーシックインカム</a>
-       <a href="<%= $base_url %>/アーユルヴェーダ" >アーユルヴェーダ</a>  <a href="<%= $base_url %>/断捨離" >断捨離</a> <a href="<%= $base_url %>/収益型住宅" >収益型住宅</a>
+      <div class="about">
+        <h3>理想について</h3>
+        <a href="/keyword/ノマド" >ノマド</a> <a href="/keyword/自給自足" >自給自足</a> <a href="/keyword/ベーシックインカム" >ベーシックインカム</a>
+        <a href="/keyword/アーユルヴェーダ" >アーユルヴェーダ</a>  <a href="/keyword/断捨離" >断捨離</a> <a href="/keyword/収益型住宅" >収益型住宅</a>
+    </div>        
+      <div class="tweet">
+        理想について<a href="https:/twitter.com/share" class="twitter-share-button" data-text="オフィスを持たないノマドワークは21世紀の働き方だよ。ベーシックインカムが実現すれば実現が近くなると思うね。食べ物だって自給自足すべきじゃないかな?今度アーユルヴェーダに行ってくる。帰ってきたら収益型住宅についてマイルストーンをたてる。まずは断捨離からな。" data-lang="ja" data-size="large" data-related="ishikimeter" data-hashtags="意識メーター,理想">理想についてつぶやく</a>        
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+      </div>
     </div>
   </div>
 </div>
+
+<hr/>
 <div class="row" style="margin-top:35px">
   <div class="span3">
     <a class="twitter-timeline" href="https://twitter.com/search?q=%23%E6%84%8F%E8%AD%98%E3%83%A1%E3%83%BC%E3%82%BF%E3%83%BC" data-widget-id="349495222604017664">Tweets about "#意識メーター"</a>
@@ -58,12 +77,26 @@
     <iframe src="//www.facebook.com/plugins/likebox.php?href=https%3A%2F%2Fwww.facebook.com%2Fishikimeter&amp;width=292&amp;height=590&amp;show_faces=true&amp;colorscheme=light&amp;stream=true&amp;show_border=true&amp;header=true&amp;appId=380952785358091" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:292px; height:590px;" allowTransparency="true"></iframe>
   </div>
   <div class="span3">
-    <h3>広告枠</h3>
-    <div class="advertisement">
-      <p><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></p>
-      <p><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></p>
-      <p><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></p>
-    </div>
+    <h4>よくある質問</h4>
+    <hr/>
+    <dl class="qa">
+      <dt>Q1.メーターの最大基準値は何ですか?</dt>
+      <dd><small>A.登録されている最も高い意識が最大値です。</small></dd>
+      <dt>Q2.解析対象は何ですか?</dt>
+      <dd><small>A.プロフィールと直近のツイート20件です。</small></dd>
+      <dt>Q3.どうすれば意識を高くできますか?</dt>
+      <dd><small>A.<a href="http://twitter.com/ishikimeter">@ishikimeter</a>を参考にツイートしてください。</small></dd>
+      <dt>Q4.どうすれば意識を低くできますか?</dt>
+      <dd><small>A.しばらくインターネットから離れましょう。</small></dd>
+      <dt>Q5.このウェブサービスは何ですか?</dt>
+      <dd><small>A.ジョークウェブサービスです。</small></dd>
+    </dl>
+    <!-- <ul class="advertisement unstyled"> -->
+    <!--   <li><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></li> -->
+    <!--   <li><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></li> -->
+    <!--   <li><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></li> -->
+    <!--   <li><%= image '/img/140x140.png', alt => 'Foo',class => 'img-polaroid' %></li> -->
+    <!-- </ul> -->
   </div>
 </div>
 

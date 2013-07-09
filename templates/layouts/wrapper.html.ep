@@ -30,13 +30,6 @@
                 </button>
                 <div class="nav-collapse collapse">
                   <ul class="nav">
-                    % if ( '/' eq $request_uri ) {
-                    <li class="active">
-                    % } else {
-                    <li class="">
-                    % }
-                      <a href="/">Home</a>
-                    </li>
                     % if ( '/recent' eq $request_uri ) {
                     <li class="active">
                     % } else {
@@ -49,7 +42,14 @@
                     % } else {
                     <li class="">
                     % }
-                      <a href="/ranking">ランキング</a>
+                      <a href="/ranking">意識ランキング</a>
+                    </li>
+                    % if ( '/wiki' eq $request_uri ) {
+                    <li class="active">
+                    % } else {
+                    <li class="">
+                    % }
+                      <a href="/wiki">意識wiki</a>
                     </li>
                    </ul>
                   <ul class="nav pull-right">
@@ -89,20 +89,22 @@
             <!-- </div> -->
          </div> <!-- #content -->
           <div id="sidebar" class="span3">
-            <div class="hero-unit"></div>
+            <!-- <div class="rectangle"> -->
+            <!-- <%= image '/img/200x200.png', alt => 'Foo',class => 'img-polaroid' %> -->
+            <!-- </div> -->
             <table class='table table-bordered table-hover'>
               <tr class="info">
                 <td colspan="2">
                   人気意識ワード
                 </td>
               </tr>
-              % for my $keyword ( @$keyword_ranking) {
-              <tr>
+              % for my $keyword ( @$keyword_ranking ) {
+              <tr data-href="/keyword/<%= $keyword->{name} %>">
                 <td>
-                  <a href="<%= $base_url %>keyword/<%= $keyword->{name} %>"><%= $keyword->{name} %></a>
+                  <%= $keyword->{name} %>
                 </td>
                 <td>
-                  <small><%= $keyword->{description} %>キーワードの説明です</small>
+                  <small><%= $keyword->{description} %></small>
                 </td>
                </tr>
               % }
@@ -141,6 +143,7 @@
       </div>
     </div>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <%= javascript '/js/common.js' %>
     <%= javascript '/js/bootstrap.min.js' %>
   </body>
 </html>

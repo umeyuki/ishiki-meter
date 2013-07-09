@@ -50,13 +50,3 @@ create table if not exists entry_keywords (
     deleted text,
     UNIQUE(entry_id,keyword_id)
 );
-
-create table if not exists persons (
-    id integer primary key autoincrement,
-    name integer not null,
-    value integer not null,
-    description text not null,
-    created datetime default current_timestamp,
-    updated datetime default current_timestamp,
-    deleted text,
-);

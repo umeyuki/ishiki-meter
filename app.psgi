@@ -59,9 +59,11 @@ helper get_keywords => sub {
     unless ( %$keywords ) {
         my $sql = <<SQL;
 SELECT
-    id,name,value
+  id,name,value
 FROM
-    keywords
+  keywords
+WHERE
+  deleted IS NULL
 SQL
         my $dbh = $self->dbh;
         my $sth = $dbh->prepare($sql);
@@ -144,7 +146,8 @@ FROM
   users
 WHERE
   authenticated_by = ? AND
-  remote_id        = ?
+  remote_id        = ? AND
+  deleted IS NULL
 SQL
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
@@ -287,7 +290,7 @@ helper get_ishiki => sub {
     my $dbh =$self->dbh;
     warn Dumper $entry_id;
     my $sql = <<SQL;
-SELECT ishiki FROM entries WHERE id = ?;
+SELECT ishiki FROM entries WHERE id = ? AND deleted IS NULL;
 SQL
     my ($ishiki)  = $dbh->selectrow_array($sql,{},$entry_id);
     
@@ -377,7 +380,7 @@ helper get_user_count => sub {
     my $dbh =$self->dbh;
 
     my $sql = <<SQL;
-SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM users WHERE deleted IS NULL;
 SQL
     my ($count)  = $dbh->selectrow_array($sql);
     
@@ -449,7 +452,7 @@ get '/auth/auth_twitter' => sub {
             method => 'GET',
             url    => 'https://api.twitter.com/1.1/statuses/user_timeline.json',
             token  => $access_token,
-            params => { count => 10 }
+            params => { count => 20 }
         );
         my $timeline = decode_json( $tl_res->decoded_content );
         my @tweets   = ();
@@ -469,9 +472,6 @@ get '/auth/auth_twitter' => sub {
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
         my $entry_id = $self->process($user,$ishiki,$used_keywords);
         
-        # $session->set( 'user'        => $user );
-        # $session->set( 'ishiki'      => $ishiki );
-        # $session->set( 'used_keywords'    => $used_keywords );
         $self->redirect_to('/' . $entry_id);
     }
 
@@ -691,6 +691,10 @@ ON
   k.id = ek.keyword_id  
 WHERE
   ek.entry_id = ?
+AND
+  k.deleted IS NULL
+AND
+  ek.deleted IS NULL
 SQL
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
@@ -728,7 +732,10 @@ SELECT
   id,name,description
 FROM
   keywords
-WHERE name = ?
+WHERE
+  name = ?
+AND
+  deleted IS NULL
 SQL
 
     my $dbh = $self->dbh;
