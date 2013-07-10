@@ -17,12 +17,34 @@ use JSON;
 use Redis;
 use Try::Tiny;
 use Encode qw/encode_utf8/;
-
+use Time::Piece;
 
 my $config = plugin( 'Config' => { file => "config.pl" } );
 
 app->secret( $config->{secret} );
 
+# sqlite3 dateをエポック時間に変換
+helper epoch => sub {
+    my ($self,$date) = @_;
+    my $t = Time::Piece->strptime($date,'%Y-%m-%d %H:%M:%S');
+    $t->epoch;
+};
+
+# エポック秒の差を計算
+helper elapsed_time => sub {
+    my ($self,$before,$now ) = @_;
+
+    my $epoch = $self->epoch($now) - $self->epoch($before);
+    $epoch;
+};
+
+# 1日以上の時間差があればfalseを返す
+helper validate_time => sub {
+    my ( $self, $epoch ) = @_;
+
+    return $epoch <= 86400 ? 1 : 0;
+};
+    
 helper redis => sub {
     Redis->new( %{ $config->{Redis} } );
 };
@@ -104,17 +126,19 @@ helper ishiki => sub {
 };
 
 helper process => sub {
-    my ($self,$user,$ishiki,$used_keywords) = @_;
-
+    my ($self, $user_id, $user, $ishiki,$used_keywords) = @_;
+    
     my $entry_id;
     my $dbh  = $self->dbh;
     my $redis = $self->redis;
+    
     try {
         my $tm = DBIx::TransactionManager->new( $dbh );
         {
             my $txn = $tm->txn_scope;
-            my $user_id =
-                $self->create_user( $dbh,$user  ) || $self->user_id( $user );
+            $user_id =
+                $self->create_user( $dbh,$user  ) unless $user_id;
+            # 既にエントリーが存在し、1日以内であれば警告して終了
             $entry_id = $self->create_entry( $dbh,$user_id, $ishiki, $used_keywords );
             $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
             $txn->commit;
@@ -133,6 +157,31 @@ helper process => sub {
         warn "caught error: $_";
         $dbh->disconnect;
     }
+};
+
+helper before_entry_time => sub  {
+    my ( $self, $user_id ) = @_;
+
+    my $sql = <<SQL;
+SELECT
+  created
+FROM
+  entries
+WHERE
+  user_id = ?
+AND
+  deleted IS NULL
+ORDER BY created DESC
+LIMIT 1
+SQL
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$user_id);
+    $sth->execute or croak $sth->errstr;
+    my $rows = $sth->fetchall_arrayref({});
+    my $created = $rows->[0]->{created};
+
+    $self->epoch($created);
 };
 
 helper user_id => sub {
@@ -160,7 +209,7 @@ SQL
         $user_id = $row->{id};
     }
     
-    croak 'Select user error!' unless $user_id;
+    croak 'could\'nt find user_id !' unless $user_id;
     $dbh->disconnect;
     $user_id;
 };
@@ -458,8 +507,22 @@ get '/auth/auth_twitter' => sub {
             profile_image_url => $tw_user->{profile_image_url}
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
-        my $entry_id = $self->process($user,$ishiki,$used_keywords);
-        
+
+
+        my $user_id =
+            $self->user_id( $user );
+        if ( $user_id ) {
+            # 前回投稿から1日たっていない場合はfalseを返す
+            my $before_time = $self->before_entry_time($user_id);
+
+            if ( $before_time && not $self->validate_time($before_time,localtime->epoch ) ) {
+                $self->flash( message => '意識解析は1日1回です。1日経ってから再度お試し下さい(:');
+                return $self->redirect_to('/');
+            }
+        }
+
+        my $entry_id = $self->process($user_id, $user, $ishiki,$used_keywords);
+
         $self->redirect_to('/' . $entry_id);
     }
 

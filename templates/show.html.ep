@@ -1,6 +1,7 @@
 % layout 'wrapper';
 % title '意識メーター';
 
+
 % my $entry = shift $entries;
 % if ( keys $entry > 0 ) {
 <p><img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>さんの意識調査</p>
