@@ -105,7 +105,7 @@ INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (104, '収益
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (105, 'GTD',7,'デビットアレンが提唱するタスク管理術の1つ。Inboxとよばれるものに、頭の中にあるやらなければならないこと 悩んでいること いつかやりたいことを書き出し、定期的にいつやるかを決める手法。週ごとの見直しが面倒でやめてしまうことが多い。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (106, 'タスク',3,'やらなければいけないことの一覧。ToDoとの違いは人によって違う。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (107, 'ToDo',6,'やらなければいけないことの一覧。ToDoとの違いは人によって違う。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (108, 'スタバ',3,'世界チェーンのコーヒーカフェ。家でも職場でもない安心できる場所サードプレイスを目指しており、ノマドが集まるカフェの1つ。');INSERT INTO keywords ('name', 'value', 'description') VALUES ('スターバックス',3,'世界チェーンのコーヒーカフェ。家でも職場でもない安心できる場所サードプレイスを目指しており、ノマドが集まるカフェの1つ。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (108, 'スタバ',3,'世界チェーンのコーヒーカフェ。家でも職場でもない安心できる場所サードプレイスを目指しており、ノマドが集まるカフェの1つ。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (109, '挽きたて',4,'コーヒー豆を挽いたばかりの状態。ミルとよばれる機械を使う');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (110, '清貧',1,'お金のあるなしに関わらず、私欲を捨て質素な生活を営むこと。もしくはかつて中野にあったセルフキッチンスタイルの居酒屋。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (111, 'テレビを持ってない',6,'最近の若者に多い。使える時間が増える、NHKの集金に堂々と持っていないと言えるなどメリットも多いが、周りの話題についてずに孤立する恐れもある。');
@@ -119,14 +119,11 @@ INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (118, 'ソー
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (119, 'ロジカルシンキング',3,'論理的な考える思考方法。プライベートで使うと嫌われてしまうこともある。使い分け大事。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (120, 'MECE',3,'物事をモレがなくダブりのない状態にすること。ロジカルシンキングに使われる。');
 INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (121, 'Twitter',6,'ツイートと呼ばれる140文字以内の文章を投稿してコミュニケーションをとるウェブサービス。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (122, 'ゴールドカラー',7,'人生における移動距離が長い人。仕事範囲がグローバルな人を言う。主体的に仕事を行ない、雇われていながらも指示されずに自分で仕事を作り達成する人。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (123, 'デュアルライフ',5,'2箇所以上に拠点を置いて生活する人。拠点が国境を越える場合もある。人気の地域としてハワイ、イビサ、サンセバスチャン、バンコク、セブ、台北などがある。人気というか管理人が住みたいところです。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (124, 'アーユルヴェーダ',3,'インド大陸の伝統的医学。個人の体質を知り、ヴァータと呼ばれる属性によって食べ物や治療法を変えるもの。近年ではスリランカのアーユルヴェーダに根強い人気がある。慢性的に悩まされていた病を克服するという例も多数ある。最低でも2週間の滞在が必要と言われる。日本国内のアーユルヴェーダを謳う製品は名を使った擬い物である。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (125, '断捨離',3,'ヨガの行法。不要な物を捨て、物への執着を無くし心の調和を導く生き方や考え方。');
-INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (126, 'ベーシックインカム',2,'毎月すべての人に一定の所得を与えるという最低保証程度の1つ。');
-
-
-
-
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (122, 'デュアルライフ',5,'2箇所以上に拠点を置いて生活する人。拠点が国境を越える場合もある。人気の地域としてハワイ、イビサ、サンセバスチャン、バンコク、セブ、台北などがある。人気というか管理人が住みたいところです。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (123, 'アーユルヴェーダ',3,'インド大陸の伝統的医学。個人の体質を知り、ヴァータと呼ばれる属性によって食べ物や治療法を変えるもの。近年ではスリランカのアーユルヴェーダに根強い人気がある。慢性的に悩まされていた病を克服するという例も多数ある。最低でも2週間の滞在が必要と言われる。日本国内のアーユルヴェーダを謳う製品は名を使った擬い物である。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (124, '断捨離',3,'ヨガの行法。不要な物を捨て、物への執着を無くし心の調和を導く生き方や考え方。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (125, 'ベーシックインカム',2,'毎月すべての人に一定の所得を与えるという最低保証程度の1つ。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (126, 'ゴールドカラー',7,'人生における移動距離が長い人。仕事範囲がグローバルな人を言う。主体的に仕事を行ない、雇われていながらも指示されずに自分で仕事を作り達成する人。');
+INSERT INTO keywords ('id', 'name', 'value', 'description') VALUES (127, 'スターバックス',3,'世界チェーンのコーヒーカフェ。家でも職場でもない安心できる場所サードプレイスを目指しており、ノマドが集まるカフェの1つ。');
 
 

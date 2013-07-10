@@ -172,9 +172,9 @@ helper create_user => sub {
     my $sql = <<SQL;
 INSERT OR IGNORE
 INTO
-  users(authenticated_by,remote_id,name,profile_image_url)
+  users(authenticated_by,remote_id,name,profile_image_url,created,updated)
 VALUES
-  (?,?,?,?)
+  (?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))
 SQL
     my $sth =$dbh->prepare($sql);
 
@@ -194,26 +194,18 @@ helper create_entry => sub {
 
     # 表示用htmlを作成
     my @html = ();
-    my $base_html = <<HTML;
-<li class="rank%d"><a href="%s" >%s</a></li>
-HTML
     my $link;
-    for my $keyword ( keys %{$used_keywords} ){
-        $link = sprintf('https://twitter.com/search?q=%s',$keyword);
-        push @html,sprintf($base_html,$used_keywords->{$keyword}->{value} ,$link, $keyword);
-    }
 
     my $sql = <<SQL;
 INSERT
 INTO
-  entries(user_id,ishiki,html)
+  entries(user_id,ishiki,created,updated)
 VALUES
-  (?,?,?);
+  (?,?,datetime('now', 'localtime'),datetime('now', 'localtime'));
 SQL
     my $sth = $dbh->prepare($sql);
     $sth->bind_param(1,$user_id);
     $sth->bind_param(2,$ishiki);
-    $sth->bind_param(3,join('',@html));
     $sth->execute or croak $sth->errstr;
     $sth->finish;
 
@@ -262,21 +254,17 @@ under sub {
     # 最も使われているランキング 1週間ごとに更新が望ましい
     $self->stash->{keyword_ranking} = $self->keyword_ranking;    
 
-    # マンスリー意識ランキング entry_idとuser_nameとishikiを表示
-
     # ユーザ数
     my $user_count = $self->get_user_count;
     $self->stash->{user_count}   = $user_count;
 
     $self->stash->{request_uri} = $self->req->env->{REQUEST_URI};
 
-
     # 最高位
     my $redis = $self->redis;
     my $top_entry_id = shift $redis->zrevrange('entry_ranking',0,0);
 
     # 意識ランキング
-#    $self->stash->{entry_ranking} = $self->entry_ranking;
     
     $self->stash->{top_entry_id} = $top_entry_id;
     $self->stash->{top_ishiki} = $self->get_ishiki($top_entry_id) || 500;
