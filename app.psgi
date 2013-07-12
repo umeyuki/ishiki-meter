@@ -850,8 +850,7 @@ SQL
 get '/wiki' => sub {
     my $self = @_;
 
-    ;
-#    $self->stash->{} = $self->completed_keywords;
+    $self->stash->{completed_keywords} = $self->completed_keywords;
 };
 
 helper get_complted_keywords => sub {
