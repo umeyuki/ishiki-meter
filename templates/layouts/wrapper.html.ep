@@ -113,6 +113,9 @@
             <h5>現在のユーザ数</h5>
             <h2><%= comma $user_count %>人</h2>
 
+            <h5>現在の投稿数</h5>
+            <h2><%= comma $entry_count %>件</h2>
+            
             <h5>管理人について</h5>
             <div><a href="http://www.flickr.com/photos/68742489@N02/8347394773/" onclick="javascript:_gaq.push(['_trackEvent','outbound-widget','http://www.flickr.com']);" title="umeyuki by umeyuki1326, on Flickr"><img src="http://farm9.staticflickr.com/8330/8347394773_395fd389d6_s.jpg" width="75" height="75" alt="umeyuki"></a></div>
             <p>ブログを書いたりウェブサービスを開発しています(:</p>

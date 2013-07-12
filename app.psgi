@@ -307,6 +307,10 @@ under sub {
     my $user_count = $self->get_user_count;
     $self->stash->{user_count}   = $user_count;
 
+    # エントリー数
+    my $entry_count = $self->get_entry_count;
+    $self->stash->{entry_count}   = $entry_count;
+
     $self->stash->{request_uri} = $self->req->env->{REQUEST_URI};
 
     # 最高位
@@ -425,6 +429,21 @@ SQL
     $count;
 };
 
+helper get_entry_count => sub {
+    my $self = shift;
+
+    my $dbh =$self->dbh;
+
+    my $sql = <<SQL;
+SELECT COUNT(*) FROM entries WHERE deleted IS NULL;
+SQL
+    my ($count)  = $dbh->selectrow_array($sql);
+    
+    $dbh->disconnect;
+    $count;
+};
+
+
 get '/' => sub {
     my $self = shift;
 
@@ -508,7 +527,9 @@ get '/auth/auth_twitter' => sub {
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
 
-
+        # 新出キーワードがあればcompletedフラグをたてる
+        $self->complete($used_keywords);
+        
         my $user_id =
             $self->user_id( $user );
         if ( $user_id ) {
@@ -527,6 +548,32 @@ get '/auth/auth_twitter' => sub {
     }
 
 };
+
+# 未出現のキーワードにcompleteフラグをつける
+
+helper complete => sub {
+    my ( $self, $keywords ) = @_;
+
+    my @keyword_ids = map { $keywords->{$_}->{id} } keys %$keywords;
+
+    my $sb = SQL::Maker->new( driver => 'mysql' );
+
+    my %set = (
+        completed => \"datetime('now', 'localtime')"
+    );
+    my %where = (
+        id => { 'IN' => \@keyword_ids},
+        completed => \'IS NULL'
+    );
+
+    my ($sql,@binds) = $sb->update('keywords',\%set,\%where);
+    my $dbh = $self->dbh;
+    $dbh->do($sql,undef,@binds) or croak $dbh->errstr;
+
+    $dbh->disconnect;
+};
+
+# facebook認証 今のところ使わない
 
 get '/auth/auth_fb' => sub {
     my $self = shift;
@@ -797,6 +844,37 @@ SQL
     my ( $content ) = @{$sth->fetchall_arrayref({})};
     $dbh->disconnect;
         
+    $content;
+};
+
+get '/wiki' => sub {
+    my $self = @_;
+
+    ;
+#    $self->stash->{} = $self->completed_keywords;
+};
+
+helper get_complted_keywords => sub {
+    my $self = @_;
+
+        my $sql = <<SQL;
+SELECT
+  initial_letter,name
+FROM
+  keywords
+WHERE
+  deleted IS NULL
+AND
+  completed IS NOT NULL
+SQL
+
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute;
+
+    my ( $content ) = @{$sth->fetchall_arrayref({})};
+    $dbh->disconnect;
+
     $content;
 };
 
