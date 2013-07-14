@@ -148,6 +148,15 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <%= javascript '/js/common.js' %>
     <%= javascript '/js/bootstrap.min.js' %>
+    <%= javascript '/js/noty/jquery.noty.js' %>
+    <%= javascript '/js/noty/layouts/top.js' %>
+    <%= javascript '/js/noty/themes/default.js' %>
+% if ( flash 'message' ) {
+    <script>
+      noty_generate("top","<%= flash 'message' %>");
+    </script>
+% }
+    
   </body>
 </html>
 

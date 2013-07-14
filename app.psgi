@@ -209,7 +209,6 @@ SQL
         $user_id = $row->{id};
     }
     
-    croak 'could\'nt find user_id !' unless $user_id;
     $dbh->disconnect;
     $user_id;
 };
@@ -265,6 +264,7 @@ SQL
 helper create_entry_keywords => sub {
     my ($self,$dbh,$entry_id,$user_id,$used_keywords) = @_;
 
+    
     SQL::Maker->load_plugin('InsertMulti');
     my $keywords = $self->get_keywords;
 
@@ -329,7 +329,7 @@ helper get_ishiki => sub {
     my ($self,$entry_id) = @_;
     
     my $dbh =$self->dbh;
-    warn Dumper $entry_id;
+
     my $sql = <<SQL;
 SELECT ishiki FROM entries WHERE id = ? AND deleted IS NULL;
 SQL
@@ -526,7 +526,9 @@ get '/auth/auth_twitter' => sub {
             profile_image_url => $tw_user->{profile_image_url}
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
-
+        warn 'check';
+        warn Dumper $used_keywords;
+        
         # 新出キーワードがあればcompletedフラグをたてる
         $self->complete($used_keywords);
         
@@ -537,7 +539,7 @@ get '/auth/auth_twitter' => sub {
             my $before_time = $self->before_entry_time($user_id);
 
             if ( $before_time && not $self->validate_time($before_time,localtime->epoch ) ) {
-                $self->flash( message => '意識解析は1日1回です。1日経ってから再度お試し下さい(:');
+                $self->flash( message => '意識解析は1日1回まで可能です。1日経ってから再度お試し下さい(:');
                 return $self->redirect_to('/');
             }
         }
@@ -665,11 +667,8 @@ get '/auth/auth_fb' => sub {
         push @messages,$user->{profile};
 
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
-        
-        $session->set( 'user'        => $user );
-        $session->set( 'ishiki'      => $ishiki );
-        $session->set( 'used_keywords'    => $used_keywords );
-
+        warn 'used';
+        warn Dumper $used_keywords;
         my $entry_id = $self->process($user,$ishiki,$used_keywords);
 
         $self->redirect_to('/' . $entry_id  );
@@ -693,6 +692,7 @@ get '/ranking' => sub {
     $self->render('ranking');
 };
 
+
 get '/recent' => sub {
     my $self = shift;
 
@@ -702,6 +702,43 @@ get '/recent' => sub {
     $self->render('recent');
 
 };
+
+# 意識wiki
+get '/wiki' => sub {
+    my $self = shift;
+
+    $self->stash->{completed_keywords} = $self->get_completed_keywords;
+};
+
+helper get_completed_keywords => sub {
+    my $self = shift;
+
+    my $sql = <<SQL;
+SELECT                   
+  initial_letter,name    
+FROM                     
+  keywords               
+WHERE                    
+  deleted IS NULL        
+AND
+  completed IS NOT NULL
+ORDER BY initial_letter ASC
+SQL
+
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->execute;
+
+    my $rows = $sth->fetchall_arrayref({});
+    my $result;
+    for my $row ( @$rows ) {
+        push @{$result->{$row->{initial_letter}}}, $row->{name};
+    }
+    $dbh->disconnect;
+
+    $result;
+};
+
 
 # entry page
 get '/:entry_id' => sub {
@@ -847,35 +884,7 @@ SQL
     $content;
 };
 
-get '/wiki' => sub {
-    my $self = @_;
 
-    $self->stash->{completed_keywords} = $self->completed_keywords;
-};
-
-helper get_complted_keywords => sub {
-    my $self = @_;
-
-        my $sql = <<SQL;
-SELECT
-  initial_letter,name
-FROM
-  keywords
-WHERE
-  deleted IS NULL
-AND
-  completed IS NOT NULL
-SQL
-
-    my $dbh = $self->dbh;
-    my $sth = $dbh->prepare($sql);
-    $sth->execute;
-
-    my ( $content ) = @{$sth->fetchall_arrayref({})};
-    $dbh->disconnect;
-
-    $content;
-};
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";
