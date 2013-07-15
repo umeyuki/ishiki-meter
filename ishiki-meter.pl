@@ -703,11 +703,12 @@ get '/recent' => sub {
 
 };
 
-# 意識wiki
-get '/wiki' => sub {
+# キーワードリスト
+get '/keyword/list' => sub {
     my $self = shift;
 
     $self->stash->{completed_keywords} = $self->get_completed_keywords;
+    $self->render('keyword_list');
 };
 
 helper get_completed_keywords => sub {

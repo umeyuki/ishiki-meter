@@ -1,0 +1,22 @@
+% layout 'wrapper';
+% title '意識メーター | wiki';
+
+<div class="row">
+  <div class="span9">
+    <div class="row">
+      % for my $
+      <div class="span3">
+        <dl>
+          <dt>あ
+          </dt>
+          <dd>あさだ
+          </dd>
+          <dd>あいかわ
+          </dd>
+        </dl>  
+      </div>
+  </div>
+</div>
+
+
+

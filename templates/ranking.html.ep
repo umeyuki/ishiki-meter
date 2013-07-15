@@ -1,0 +1,52 @@
+% layout 'wrapper';
+% title '意識メーター | ランキング';
+
+
+<h1>ランキング</h1>
+% my $count = 1;
+% my $entry_count = scalar @$entries;
+<div class="row">
+% for my $entry (  @$entries ) {
+% #TODO 3の倍数+1
+  <div class="span9">
+    <table class="table table-bordered">
+      <tr>
+        <td>
+          <div class="row">
+            <div class="span2">
+              <img src="<%=  $entry->{profile_image_url} %>" /><h3>@<%= $entry->{name} %></h3>
+            </div>
+            <div class="span6">
+              <h2 class="text-right">第<%=$count%>位</h2>
+            </div>
+          </div>
+          <div id="gauge<%= $count %>" style="margin:0 auto;width:400px;height:220px"></div>
+          <script>
+            var g = new JustGage({
+            id: "gauge<%= $count %>",
+            value: <%= $entry->{ishiki} %>,
+            min: 0,
+            max: <%= $top_ishiki %>,
+            title: "吉村貫一郎並",
+            });
+          </script>
+        </td>
+      </tr>
+      <tr>
+        <td>
+% my $keyword_count = 0;
+<h3>意識の高い発言</h3>
+        <ul class="tag01">
+% for my $keyword ( @{$entry->{keywords}} ){
+           <li class="rank<%= $keyword->{value} %>"> <a href="/keyword/<%= $keyword->{name} %>" ><%= $keyword->{name} %></a></li>
+% $keyword_count++;
+% }
+       </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+% $count++;
+% }
+</div>
+  

@@ -1,0 +1,13 @@
+% layout 'wrapper';
+% title '意識メーター | キーワード';
+
+<h2><%= $content->{name} %></h2>
+
+<p>解説</p>
+<div class="hero-unit">
+  <%= $content->{description} %>
+</div>
+<p>関連アイテム</p>
+<%= Mojo::ByteStream->new($content->{amazon_url}) %>
+
+

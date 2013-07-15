@@ -1,0 +1,48 @@
+% layout 'wrapper';
+% title '意識メーター';
+
+
+<h1>新着意識</h1>
+% my $count = 1;
+% my $entry_count = scalar @$entries;
+% for my $entry (  @$entries ) {
+% #TODO 3の倍数+1
+% if ( $count == 1 || $count == 4 || $count == 7 ) {
+<div class="row">
+% }
+  <div class="span3">
+    <table class="table table-bordered">
+      <tr>
+        <td> 
+          <div id="gauge<%= $count %>" style="margin:0 auto;width:200px;height:120px"></div>
+          <script>
+            var g = new JustGage({
+            id: "gauge<%= $count %>",
+            value: <%= $entry->{ishiki} %>,
+            min: 0,
+            max: <%= $top_ishiki %>,
+            title: "<%= $entry->{name} %>さんの意識の高さ"
+            });
+          </script>
+        </td>
+      </tr>
+      <tr>
+        <td>
+% my $keyword_count = 0;          
+% for my $keyword ( @{$entry->{keywords}} ){
+% last if $keyword_count > 8;
+<span><a href="http://localhost:5000/keyword/<%= $keyword->{name} %>"><%= $keyword->{name} %></a></span>
+% $keyword_count++;
+% }
+% if ( $keyword_count ) {
+<a href="<%= $base_url %><%= $entry->{entry_id} %>">...and more</a>
+% }
+        </td>
+      </tr>
+    </table>
+  </div>
+% if ( $count % 3 == 0 || $count == $entry_count ) {
+</div> <!-- .row -->
+%  }
+% $count++;
+% }
