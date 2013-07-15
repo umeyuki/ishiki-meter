@@ -21,4 +21,3 @@ requires 'Redis';
 requires 'Starman';
 requires 'LWP::Protocol::https';
 requires 'Try::Tiny';
-

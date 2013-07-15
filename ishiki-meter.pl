@@ -731,13 +731,17 @@ SQL
     $sth->execute;
 
     my $rows = $sth->fetchall_arrayref({});
-    my $result;
+    my @result;
     for my $row ( @$rows ) {
-        push @{$result->{$row->{initial_letter}}}, $row->{name};
+        push @result, {
+            initial => $row->{initial_letter},
+            name    => $row->{name}
+        };
     }
     $dbh->disconnect;
 
-    $result;
+    warn Dumper @result;
+    \@result;
 };
 
 
