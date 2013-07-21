@@ -30,19 +30,11 @@ helper epoch => sub {
     $t->epoch;
 };
 
-# エポック秒の差を計算
-helper elapsed_time => sub {
-    my ($self,$before,$now ) = @_;
-
-    my $epoch = $self->epoch($now) - $self->epoch($before);
-    $epoch;
-};
-
 # 1日以上の時間差があればfalseを返す
 helper validate_time => sub {
-    my ( $self, $epoch ) = @_;
-
-    return $epoch <= 86400 ? 1 : 0;
+    my ( $self, $before, $now ) = @_;
+    my $epoch = $now - $before;
+    return $epoch > 86400 ? 1 : 0;
 };
     
 helper redis => sub {
@@ -526,8 +518,6 @@ get '/auth/auth_twitter' => sub {
             profile_image_url => $tw_user->{profile_image_url}
         };
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
-        warn 'check';
-        warn Dumper $used_keywords;
         
         # 新出キーワードがあればcompletedフラグをたてる
         $self->complete($used_keywords);
@@ -535,10 +525,9 @@ get '/auth/auth_twitter' => sub {
         my $user_id =
             $self->user_id( $user );
         if ( $user_id ) {
-            # 前回投稿から1日たっていない場合はfalseを返す
+            # 前回投稿から1日たっていない場合は警告して終了
             my $before_time = $self->before_entry_time($user_id);
-
-            if ( $before_time && not $self->validate_time($before_time,localtime->epoch ) ) {
+            if ( $before_time && not $self->validate_time( $before_time,localtime->epoch ) ) {
                 $self->flash( message => '意識解析は1日1回まで可能です。1日経ってから再度お試し下さい(:');
                 return $self->redirect_to('/');
             }
