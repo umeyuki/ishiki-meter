@@ -11,7 +11,7 @@ INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') 
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (11, 'メルマガ','め',5, 'まぐまぐを筆頭に近年復活をとげたシステム。堀江貴文が開拓したと言われる。ブログでは知ることができない話を知ることができる一方、肯定者が集まりやすいため否定の意見がでづらいなどと賛否両論がある。' );
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (12, '自由','し',2, '柵を解き放ち、何にも縛られないこと。脱サラリーマンを目指してる人の価値観に多い。' );
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (13, '笑顔','え',4, '嬉しい時に表れる表情。幸せに生きるために必要なもの。' );
-INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (14, '読書','ど',5, '本を読む行為。教養や知識が高められ、思考能力を鍛えることにも適している。また、娯楽として小説を読むこと。' );
+INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (14, '読書','と',5, '本を読む行為。教養や知識が高められ、思考能力を鍛えることにも適している。また、娯楽として小説を読むこと。' );
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (15, 'コンサルティング','こ',6,'企業や機関に対して専門知識を活用し、問題点を見つけ改善策を提案すること' );
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (16, '経済学部','け',2,'');
 INSERT INTO keywords ('id',  'name', 'initial_letter' , 'value', 'description') VALUES (17, '商学部','し',2,'簿記などの会計法を中心に学ぶ学部。');

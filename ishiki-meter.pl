@@ -135,11 +135,11 @@ helper process => sub {
             $self->create_entry_keywords($dbh,$entry_id,$user_id,$used_keywords);
             $txn->commit;
             
-            # new ishiki
+            # 新着意識に追加
             $redis->lpush('recent',$entry_id);
-            # user ranking
+            # ユーザランキングに追加
             $redis->zadd('entry_ranking', $ishiki, $entry_id);
-            # keyword ranking
+            # 人気キーワードに追加
             $redis->zincrby('keyword_ranking', 1, $used_keywords->{$_}->{id} ) for keys %$used_keywords;
             
             return $entry_id;
@@ -303,7 +303,7 @@ under sub {
     my $entry_count = $self->get_entry_count;
     $self->stash->{entry_count}   = $entry_count;
 
-    $self->stash->{request_uri} = $self->req->env->{REQUEST_URI};
+    $self->stash->{request_uri} = $self->req->url->path;
 
     # 最高位
     my $redis = $self->redis;
@@ -696,43 +696,59 @@ get '/recent' => sub {
 get '/keyword/list' => sub {
     my $self = shift;
 
-    $self->stash->{completed_keywords} = $self->get_completed_keywords;
+    $self->stash->{keyword_list1} = $self->keyword_list($self->alphabet);
+    $self->stash->{keyword_list2} = $self->keyword_list($self->a_to_no);
+    $self->stash->{keyword_list3} = $self->keyword_list($self->ha_to_n);
+
     $self->render('keyword_list');
 };
 
-helper get_completed_keywords => sub {
-    my $self = shift;
+helper keyword_list => sub {
+    my ( $self, $initials ) = @_;
 
-    my $sql = <<SQL;
-SELECT                   
-  initial_letter,name    
-FROM                     
-  keywords               
-WHERE                    
-  deleted IS NULL        
-AND
-  completed IS NOT NULL
-ORDER BY initial_letter ASC
-SQL
-
+    my $select = ['initial_letter', 'name', 'completed'];
+    my $where = {
+        initial_letter => $initials,
+        deleted     => undef
+    };
+    my $opt = { order_by => 'initial_letter asc' };
+    
+    my $sb = $self->sb;
+    my ( $sql, @binds ) = $sb->select( 'keywords', $select ,$where, $opt );
+    
     my $dbh = $self->dbh;
     my $sth = $dbh->prepare($sql);
-    $sth->execute;
+    $sth->execute(@binds);
 
     my $rows = $sth->fetchall_arrayref({});
     my @result;
     for my $row ( @$rows ) {
+        my $completed = $row->{completed} ?  1 : 0;
         push @result, {
             initial => $row->{initial_letter},
-            name    => $row->{name}
+            name    => $row->{name},
+            completed => $completed
         };
     }
     $dbh->disconnect;
-
-    warn Dumper @result;
+    warn Dumper \@result;
     \@result;
 };
 
+helper alphabet => sub {
+    my @alphabet = qw/a b c d e f g h i j k l m n o p q r s t u v w x y z/;
+    \@alphabet;
+};
+
+helper a_to_no => sub {
+    my @a_to_no = qw/あ い う え お か き く け こ さ し す せ そ た ち つ て と な に ぬ ね の/;
+    \@a_to_no;
+};
+
+helper ha_to_n => sub {
+    my @ha_to_no = qw/は ひ ふ へ ほ ま み む め も や ゆ よ ら り る れ ろ わ を ん/;
+    \@ha_to_no;
+};
 
 # entry page
 get '/:entry_id' => sub {
@@ -741,7 +757,6 @@ get '/:entry_id' => sub {
     my $entry_id = $self->param('entry_id');
 
     return $self->render_not_found unless $entry_id =~ /\d+/;
-    
     
     # popular
     my $redis = $self->redis;
@@ -877,7 +892,6 @@ SQL
         
     $content;
 };
-
 
 
 builder {

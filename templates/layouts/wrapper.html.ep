@@ -44,12 +44,12 @@
                     % }
                       <a href="/ranking">意識ランキング</a>
                     </li>
-                    % if ( '/wiki' eq $request_uri ) {
+                    % if ( '/keyword/list' eq $request_uri ) {
                     <li class="active">
                     % } else {
                     <li class="">
                     % }
-                      <a href="/wiki">意識の高いキーワード</a>
+                      <a href="/keyword/list">意識の高いキーワード</a>
                     </li>
                    </ul>
                   <ul class="nav pull-right">

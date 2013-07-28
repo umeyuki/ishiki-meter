@@ -1,21 +1,68 @@
 % layout 'wrapper';
-% title '意識メーター | wiki';
+% title '意識メーター | keyword list';
 
 <div class="row">
-  <div class="span9">
-    <div class="row">
-      % for my $item ( @{$completed_keywords} ) {
-      <!-- <div class="span3"> -->
+  <div class="span3">
+      % my $pre1;
+      % for my $item ( @{$keyword_list1} ) {
         <dl>
+          % if ( $item->{initial} ne $pre1 ) {
           <dt>
             <%= $item->{initial}  %>
           </dt>
+          % $pre1 = $item->{initial};
+          % }
           <dd>
-            <%= $item->{name} %>
+            % if ( $item->{completed} ) {
+            <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
+            % } else {
+            ???
+            % }
           </dd>
         </dl>
       % }
-      <!-- </div> -->
+    
+  </div>
+  <div class="span3">
+      % my $pre2;
+      % for my $item ( @{$keyword_list2} ) {
+        <dl>
+          % if ( $item->{initial} ne $pre2 ) {
+          <dt>
+            <%= $item->{initial}  %>
+          </dt>
+          % $pre2 = $item->{initial};
+          % }
+          <dd>
+            % if ( $item->{completed} ) {
+            <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
+            % } else {
+            ???
+            % }
+          </dd>
+        </dl>
+      % }
+    
+  </div>
+  <div class="span3">
+      % my $pre3;
+      % for my $item ( @{$keyword_list3} ) {
+        <dl>
+          % if ( $item->{initial} ne $pre3 ) {
+          <dt>
+            <%= $item->{initial}  %>
+          </dt>
+          % $pre3 = $item->{initial};
+          % }
+          <dd>
+            % if ( $item->{completed} ) {
+            <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
+            % } else {
+            ???
+            % }
+          </dd>
+        </dl>
+      % }
   </div>
 </div>
 
