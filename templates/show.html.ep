@@ -4,29 +4,36 @@
 
 % my $entry = shift $entries;
 % if ( keys $entry > 0 ) {
-<p><img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>さんの意識調査</p>
-<div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
-<script>
-    var g = new JustGage({
+<div>
+  <div class="row">
+    <div class="span4">
+      <p><img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>さんの意識調査</p>
+      <div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
+      <script>
+        var g = new JustGage({
         id: "gauge",
         value: <%= $entry->{ishiki} %>,
         min: 0,
         max: <%= $top_ishiki %>,
-        title: "意識の高さ"
-      });
-</script>
-
-<p>意識の高い発言</p>
-<div class="hero-unit">
-  <ul class="tag01">
-% if ( my @keywords = @{$entry->{keywords}} ) {   
-%     for my $keyword ( @keywords ) {
-    <li class="rank<%= $keyword->{value} %>"> <a href="/keyword/<%= $keyword->{name} %>" ><%= $keyword->{name} %></a></li>
-%     }
-% } else {
-    <p>意識の高い発言はありません....</p>
-% }
-  </ul>
+        title: "意識メーター"
+        });
+      </script>
+    </div>
+    <div class="span4">
+      <%= $entry->{level} %>      
+    </div>
+  </div>
+  <p>意識の高い発言</p>
+  <div class="hero-unit">
+    <ul class="tag01">
+      % if ( my @keywords = @{$entry->{keywords}} ) {   
+      %     for my $keyword ( @keywords ) {
+      <li class="rank<%= $keyword->{value} %>"> <a href="/keyword/<%= $keyword->{name} %>" ><%= $keyword->{name} %></a></li>
+      %     }
+      % } else {
+      <p>意識の高い発言はありません....</p>
+      % }
+    </ul>
+  </div>
 </div>
-
 % }

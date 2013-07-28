@@ -151,6 +151,30 @@ helper process => sub {
     }
 };
 
+helper level => sub {
+    my ( $self, $ishiki ) = @_;
+
+    my $level;
+    if ( $ishiki >= 200 ) {
+        $level = 7;
+    } elsif ( $ishiki >= 100 ) {
+        $level = 6;
+    } elsif ( $ishiki >= 80 ){
+        $level = 5;
+    } elsif ( $ishiki >= 60 ){
+        $level = 4;
+    } elsif ( $ishiki >= 40 ){
+        $level = 3;
+    } elsif ( $ishiki >= 20 ){
+        $level = 2;
+    } elsif ( $ishiki < 20 ){        
+        $level = 1;
+    } elsif ( $ishiki == 0 ) {
+        $level = 0;
+    }
+    $level;
+};
+
 helper before_entry_time => sub  {
     my ( $self, $user_id ) = @_;
 
@@ -769,13 +793,8 @@ get '/:entry_id' => sub {
 helper get_entries => sub {
     my ( $self, $entry_ids ) = @_;
 
-    unless ( 'ARRAY' eq ref $entry_ids ) {
-        $entry_ids = [$entry_ids];
-    }
-
     my $stmt = $self->sb('select');
     my $condition = $self->sb('condition');
-
 
     $stmt->add_select('e.id' => 'entry_id');
     $stmt->add_select('e.ishiki' => 'ishiki');
@@ -813,9 +832,11 @@ helper get_entries => sub {
             name               => $row->{user_name},
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
+            level              => $self->level($row->{ishiki}),
             keywords           => $self->get_entry_keyword($entry_id)
         };
     }
+    warn Dumper @result;
     $dbh->disconnect;
     \@result;
 };
