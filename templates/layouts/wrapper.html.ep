@@ -42,14 +42,14 @@
                     % } else {
                     <li class="">
                     % }
-                      <a href="/ranking">意識ランキング</a>
+                      <a href="/ranking">ランキング</a>
                     </li>
                     % if ( '/keyword/list' eq $request_uri ) {
                     <li class="active">
                     % } else {
                     <li class="">
                     % }
-                      <a href="/keyword/list">意識の高いキーワード</a>
+                    <a href="/keyword/list">意識の高い発言一覧</a>
                     </li>
                    </ul>
                   <ul class="nav pull-right">
@@ -92,14 +92,14 @@
             <!-- <div class="rectangle"> -->
             <!-- <%= image '/img/200x200.png', alt => 'Foo',class => 'img-polaroid' %> -->
             <!-- </div> -->
-            <table class='table table-bordered table-hover'>
+            <table class='table table-bordered table-hover keyword-ranking'>
               <tr class="info">
                 <td colspan="2">
                   人気意識ワード
                 </td>
               </tr>
               % for my $keyword ( @$keyword_ranking ) {
-              <tr data-href="/keyword/<%= $keyword->{name} %>">
+              <tr class="keyword-link" data-href="/keyword/<%= $keyword->{name} %>">
                 <td>
                   <%= $keyword->{name} %>
                 </td>

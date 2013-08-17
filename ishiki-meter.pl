@@ -117,6 +117,11 @@ helper ishiki => sub {
     return $ishiki,\%used_keywords;
 };
 
+helper level => sub {
+    my ( $self ) = @_;
+    
+};
+
 helper process => sub {
     my ($self, $user_id, $user, $ishiki,$used_keywords) = @_;
     
