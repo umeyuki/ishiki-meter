@@ -85,3 +85,15 @@ h2,h3,h4,h5, {
 tr.keyword-link {
     cursor:pointer;
 }
+
+.show-comment {
+    font-size: 1.5em;
+    line-height:1.5em;
+    margin:90px 0;
+}
+
+.recent-comment {
+    float:left;
+    font-size:1.3em;
+    font-style:bold;
+}

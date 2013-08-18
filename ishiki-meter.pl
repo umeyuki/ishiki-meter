@@ -118,8 +118,34 @@ helper ishiki => sub {
 };
 
 helper level => sub {
-    my ( $self ) = @_;
-    
+    my ( $self, $ishiki ) = @_;
+
+    my $redis = $self->redis;
+
+    my $top_entry_id = shift $redis->zrevrange('entry_ranking',0,0);    
+    my $high_ishiki = $self->get_ishiki($top_entry_id);
+
+
+    my $ratio = sprintf("%.2f",$ishiki / $high_ishiki) * 100;
+
+    #TODO マジックナンバー修正
+    my $level = 0;
+    if ( $ratio == 0 ) {
+        $level = 1;
+    } elsif ( $ratio >= 100 ) {
+        $level = 7;
+    } elsif ( $ratio > 80 ) {
+        $level = 6;
+    } elsif ( $ratio > 60 ) {
+        $level = 5;
+    } elsif ( $ratio > 40 ) {
+        $level = 4;
+    } elsif ( $ratio > 20 ) {
+        $level = 3;
+    } else {
+        $level = 2;
+    }
+    $level
 };
 
 helper process => sub {
@@ -154,30 +180,6 @@ helper process => sub {
         warn "caught error: $_";
         $dbh->disconnect;
     }
-};
-
-helper level => sub {
-    my ( $self, $ishiki ) = @_;
-
-    my $level;
-    if ( $ishiki >= 200 ) {
-        $level = 7;
-    } elsif ( $ishiki >= 100 ) {
-        $level = 6;
-    } elsif ( $ishiki >= 80 ){
-        $level = 5;
-    } elsif ( $ishiki >= 60 ){
-        $level = 4;
-    } elsif ( $ishiki >= 40 ){
-        $level = 3;
-    } elsif ( $ishiki >= 20 ){
-        $level = 2;
-    } elsif ( $ishiki < 20 ){        
-        $level = 1;
-    } elsif ( $ishiki == 0 ) {
-        $level = 0;
-    }
-    $level;
 };
 
 helper before_entry_time => sub  {
@@ -685,8 +687,6 @@ get '/auth/auth_fb' => sub {
         push @messages,$user->{profile};
 
         my ( $ishiki,$used_keywords ) = $self->ishiki( \@messages, $self->get_keywords );
-        warn 'used';
-        warn Dumper $used_keywords;
         my $entry_id = $self->process($user,$ishiki,$used_keywords);
 
         $self->redirect_to('/' . $entry_id  );
@@ -760,7 +760,6 @@ helper keyword_list => sub {
         };
     }
     $dbh->disconnect;
-    warn Dumper \@result;
     \@result;
 };
 
@@ -786,12 +785,15 @@ get '/:entry_id' => sub {
     my $entry_id = $self->param('entry_id');
 
     return $self->render_not_found unless $entry_id =~ /\d+/;
+
+    my  ( $entry ) = shift $self->get_entries($entry_id);
+
+    $self->stash->{entry} = $entry;
     
     # popular
     my $redis = $self->redis;
     $redis->zincrby('popular',1, $entry_id );
-    
-    $self->stash->{entries} = $self->get_entries($entry_id);
+
     $self->render('show');
 };
 
@@ -837,11 +839,10 @@ helper get_entries => sub {
             name               => $row->{user_name},
             profile_image_url  => $row->{image_url},
             ishiki             => $row->{ishiki},
-            level              => $self->level($row->{ishiki}),
+            level            => $self->level($row->{ishiki}),
             keywords           => $self->get_entry_keyword($entry_id)
         };
     }
-    warn Dumper @result;
     $dbh->disconnect;
     \@result;
 };

@@ -1,9 +1,7 @@
 % layout 'wrapper';
 % title '意識メーター';
 
-
-% my $entry = shift $entries;
-% if ( keys $entry > 0 ) {
+% if (  $entry ) {
 <div>
   <div class="row">
     <div class="span4">
@@ -19,8 +17,22 @@
         });
       </script>
     </div>
-    <div class="span4">
-      <%= $entry->{level} %>      
+    <div class="span4 show-comment">
+      % if ( $entry->{level} == 1 ) {
+      意識の高さが限りなくゼロです。というかゼロでした。
+      % } elsif ( $entry->{level} == 2 ) {
+      意識が低めです。スターバックスでビジネス書を読むフリから始めましょう。
+      % } elsif ( $entry->{level} == 3 ) {
+      意識の高さが人並です。普通が1番ですね。
+      % } elsif ( $entry->{level} == 4 ) {
+      意識が人より若干高いです。
+      % } elsif ( $entry->{level} == 5 ) {
+      意識がかなり高いです。
+      % } elsif ( $entry->{level} == 6 ) {
+      意識が高すぎです。何もしない休日を作りましょう。      
+      % } elsif ( $entry->{level} == 7 ) {
+      意識の高さにおいて最高位です。
+      % }
     </div>
   </div>
   <p>意識の高い発言</p>

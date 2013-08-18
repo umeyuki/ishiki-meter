@@ -5,7 +5,7 @@
 <h1>新着意識</h1>
 % my $count = 1;
 % my $entry_count = scalar @$entries;
-% for my $entry (  @$entries ) {
+% for my $entry ( @$entries ) {
 % #TODO 3の倍数+1
 % if ( $count == 1 || $count == 4 || $count == 7 ) {
 <div class="row">
@@ -28,8 +28,22 @@
                 });
               </script>
             </div>
-            <div style="float:left">
-              <img src="http://dummyimage.com/50x50" />              
+            <div class="recent-comment">
+              % if ( $entry->{level} == 1 ) {
+              無
+              % } elsif ( $entry->{level} == 2 ) {
+              低
+              % } elsif ( $entry->{level} == 3 ) {
+              普通
+              % } elsif ( $entry->{level} == 4 ) {
+              若干高
+              % } elsif ( $entry->{level} == 5 ) {
+              高
+              % } elsif ( $entry->{level} == 6 ) {
+              高杉
+              % } elsif ( $entry->{level} == 7 ) {
+              最高
+              % }
             </div>
           </div>
         </td>
