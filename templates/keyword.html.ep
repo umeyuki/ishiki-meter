@@ -8,6 +8,79 @@
   <%= $content->{description} %>
 </div>
 <p>関連アイテム</p>
+<div class="amazlet-box" style="margin-bottom:0px;">
+  <div class="amazlet-image" style="float:left;margin:0px 12px 1px 0px;">
+    <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4906638015/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">
+      <img src="http://ecx.images-amazon.com/images/I/51JHD9GEK0L._SL160_.jpg" alt="7つの習慣―成功には原則があった!" style="border: none;" />
+    </a>
+  </div>
+  <div class="amazlet-info" style="line-height:120%; margin-bottom: 10px">
+    <div class="amazlet-name" style="margin-bottom:10px;line-height:120%">
+      <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4906638015/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">7つの習慣―成功には原則があった!</a>
+      <div class="amazlet-powered-date" style="font-size:80%;margin-top:5px;line-height:120%">
+        posted with
+        <a href="http://www.amazlet.com/" title="amazlet" target="_blank">amazlet</a> at 13.08.18</div>
+    </div>
+    <div class="amazlet-detail">スティーブン・R. コヴィー <br />キングベアー出版 <br />売り上げランキング: 126<br />
+    </div><div class="amazlet-sub-info" style="float: left;"><div class="amazlet-link" style="margin-top: 5px">
+        <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4906638015/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">Amazon.co.jpで詳細を見る</a>
+      </div>
+    </div>
+  </div>
+  <div class="amazlet-footer" style="clear: left"></div>
+</div>
+<div class="amazlet-box" style="margin-bottom:0px;">
+  <div class="amazlet-image" style="float:left;margin:0px 12px 1px 0px;">
+    <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4101313717/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">
+      <img src="http://ecx.images-amazon.com/images/I/41W4DtjbyqL._SL160_.jpg" alt="ウケる技術 (新潮文庫)" style="border: none;" />
+    </a>
+  </div>
+  <div class="amazlet-info" style="line-height:120%; margin-bottom: 10px">
+    <div class="amazlet-name" style="margin-bottom:10px;line-height:120%">
+      <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4101313717/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">ウケる技術 (新潮文庫)</a>
+      <div class="amazlet-powered-date" style="font-size:80%;margin-top:5px;line-height:120%">posted with
+        <a href="http://www.amazlet.com/" title="amazlet" target="_blank">amazlet</a> at 13.08.18
+      </div>
+    </div>
+    <div class="amazlet-detail">水野 敬也 小林 昌平 山本 周嗣 <br />新潮社 <br />売り上げランキング: 1,718<br />
+    </div><div class="amazlet-sub-info" style="float: left;">
+      <div class="amazlet-link" style="margin-top: 5px">
+        <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4101313717/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">Amazon.co.jpで詳細を見る</a>
+      </div>
+    </div>
+  </div>
+  <div class="amazlet-footer" style="clear: left">
+  </div>
+</div>
+<div class="amazlet-box" style="margin-bottom:0px;">
+  <div class="amazlet-image" style="float:left;margin:0px 12px 1px 0px;">
+    <a href="http://www.amazon.co.jp/exec/obidos/ASIN/B009AC1EW2/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">
+      <img src="http://g-ecx.images-amazon.com/images/G/09/nav2/dp/no-image-no-ciu.gif" alt="【海外版SIMフリー】iPhone5 16GB BLACK ブラック 黒" style="border: none;width: 110px;" />
+    </a>
+  </div>
+  <div class="amazlet-info" style="line-height:120%; margin-bottom: 10px">
+    <div class="amazlet-name" style="margin-bottom:10px;line-height:120%">
+      <a href="http://www.amazon.co.jp/exec/obidos/ASIN/B009AC1EW2/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">【海外版SIMフリー】iPhone5 16GB BLACK ブラック 黒
+      </a>
+      <div class="amazlet-powered-date" style="font-size:80%;margin-top:5px;line-height:120%">
+        posted with <a href="http://www.amazlet.com/" title="amazlet" target="_blank">amazlet</a> at 13.08.18
+      </div>
+    </div>
+    <div class="amazlet-detail">Apple Computer <br />売り上げランキング: 43,582<br /></div>
+    <div class="amazlet-sub-info" style="float: left;">
+      <div class="amazlet-link" style="margin-top: 5px">
+        <a href="http://www.amazon.co.jp/exec/obidos/ASIN/B009AC1EW2/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">Amazon.co.jpで詳細を見る</a>
+      </div>
+    </div>
+  </div>
+  <div class="amazlet-footer" style="clear: left">
+  </div>
+</div>
+
+
+
+
+
 <%= Mojo::ByteStream->new($content->{amazon_url}) %>
 
 
