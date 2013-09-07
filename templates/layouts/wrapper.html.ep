@@ -134,8 +134,8 @@
           <div class="span9">
             <p class="muted credit">
               powerd by <a href="http://www.perl.org">Perl</a> and <a href="http://mojolicio.us">Mojolicious</a> and <a href="http://redis.io">Redis</a> and <a href="http://twitter.github.io/bootstrap">Twitter bootstrap</a><br/>
-              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and <a href="http://umeyuki.net/archives/623">PRONTO高円寺店</a><br/>
-              character designed by <a href="http://twitter.com/sonocomiso">@sonocomiso</a> 
+              supported by <a href="http://www.mag2.com/m/0001426750.html">ゆーすけべーラジオ</a> and <a href="http://dotinstall.com">dotinstall</a> and <a href="http://umeyuki.net/archives/623">PRONTO高円寺店</a>
+
           </div>
           <div class="span3">
             <p class="muted credit">
