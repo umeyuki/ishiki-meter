@@ -26,7 +26,10 @@ create table if not exists keywords (
 create table if not exists related_products (
     id integer primary key autoincrement,
     keyword_id integer not null,
+    name text not null,
+    image_url text not null,
     amazon_url  text not null,
+    contributer_name not null,
     created text,
     updated text,
     deleted text

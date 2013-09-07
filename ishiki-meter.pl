@@ -735,7 +735,7 @@ get '/keyword/list' => sub {
 helper keyword_list => sub {
     my ( $self, $initials ) = @_;
 
-    my $select = ['initial_letter', 'name', 'completed'];
+    my $select = ['id', 'initial_letter', 'name', 'completed'];
     my $where = {
         initial_letter => $initials,
         deleted     => undef
@@ -754,6 +754,7 @@ helper keyword_list => sub {
     for my $row ( @$rows ) {
         my $completed = $row->{completed} ?  1 : 0;
         push @result, {
+            id => $row->{id},
             initial => $row->{initial_letter},
             name    => $row->{name},
             completed => $completed
@@ -887,10 +888,12 @@ SQL
 get '/keyword/:name' => sub {
     my $self = shift;
 
-    my $content = $self->get_keyword($self->param('name'));
-    $self->redirect_to('/') unless keys %$content > 0;
+    my $keyword = $self->get_keyword($self->param('name'));
+    my $related_products = $self->get_products( $keyword->{id} );
+    $self->redirect_to('/') unless keys %$keyword > 0;
 
-    $self->stash->{content} = $content;
+    $self->stash->{keyword} = $keyword;
+    $self->stash->{related_products} = $related_products;
     $self->render('keyword');
 
 };
@@ -920,6 +923,36 @@ SQL
     $content;
 };
 
+helper get_products => sub {
+    my ( $self, $keyword_id ) = @_;
+    my $sql = <<SQL;
+SELECT
+  name, image_url, amazon_url, contributer_name
+FROM
+  related_products
+WHERE
+  keyword_id = ?
+AND
+  deleted IS NULL
+SQL
+
+    my $dbh = $self->dbh;
+    my $sth = $dbh->prepare($sql);
+    $sth->bind_param(1,$keyword_id);
+    $sth->execute;
+
+    my $products = [];
+    
+    my $rows = $sth->fetchall_arrayref({});
+    foreach my $row ( @$rows ) {
+        push $products, $row;
+    }
+    $dbh->disconnect;
+    warn 'hello!';
+    warn Dumper $products;
+
+    $products;
+};
 
 builder {
     enable "Plack::Middleware::AccessLog", format => "combined";

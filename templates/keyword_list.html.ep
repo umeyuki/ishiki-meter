@@ -13,11 +13,8 @@
           % $pre1 = $item->{initial};
           % }
           <dd>
-            % if ( $item->{completed} ) {
+            <%= $item->{id} %>
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % } else {
-            ???
-            % }
           </dd>
         </dl>
       % }
@@ -34,11 +31,7 @@
           % $pre2 = $item->{initial};
           % }
           <dd>
-            % if ( $item->{completed} ) {
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % } else {
-            ???
-            % }
           </dd>
         </dl>
       % }
@@ -55,11 +48,7 @@
           % $pre3 = $item->{initial};
           % }
           <dd>
-            % if ( $item->{completed} ) {
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % } else {
-            ???
-            % }
           </dd>
         </dl>
       % }
