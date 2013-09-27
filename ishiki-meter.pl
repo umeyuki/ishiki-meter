@@ -26,7 +26,7 @@ app->secret( $config->{secret} );
 # sqlite3 dateをエポック時間に変換
 helper epoch => sub {
     my ($self,$date) = @_;
-    my $t = Time::Piece->strptime($date,'%Y-%m-%d %H:%M:%S');
+    my $t = localtime(Time::Piece->strptime($date,'%Y-%m-%d %H:%M:%S'));
     $t->epoch;
 };
 
@@ -34,6 +34,8 @@ helper epoch => sub {
 helper validate_time => sub {
     my ( $self, $before, $now ) = @_;
     my $epoch = $now - $before;
+    my $result = $epoch;
+
     return $epoch > 86400 ? 1 : 0;
 };
     
@@ -123,8 +125,7 @@ helper level => sub {
     my $redis = $self->redis;
 
     my $top_entry_id = shift $redis->zrevrange('entry_ranking',0,0);    
-    my $high_ishiki = $self->get_ishiki($top_entry_id);
-
+    my $high_ishiki = $self->get_ishiki($top_entry_id) || 100;
 
     my $ratio = sprintf("%.2f",$ishiki / $high_ishiki) * 100;
 
@@ -343,7 +344,7 @@ under sub {
     # 意識ランキング
     
     $self->stash->{top_entry_id} = $top_entry_id;
-    $self->stash->{top_ishiki} = $self->get_ishiki($top_entry_id) || 500;
+    $self->stash->{top_ishiki} = $self->get_ishiki($top_entry_id) || 100;
     
     1;
 };
@@ -927,7 +928,7 @@ helper get_products => sub {
     my ( $self, $keyword_id ) = @_;
     my $sql = <<SQL;
 SELECT
-  name, image_url, amazon_url, contributer_name
+  product_name, contributer_name, publisher_name, image_url, amazon_url 
 FROM
   related_products
 WHERE
@@ -948,8 +949,6 @@ SQL
         push $products, $row;
     }
     $dbh->disconnect;
-    warn 'hello!';
-    warn Dumper $products;
 
     $products;
 };

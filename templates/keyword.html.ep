@@ -18,14 +18,21 @@
   </div>
   <div class="amazlet-info" style="line-height:120%; margin-bottom: 10px">
     <div class="amazlet-name" style="margin-bottom:10px;line-height:120%">
-      <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4906638015/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">7つの習慣―成功には原則があった!</a>
+      <a href="<%= $p->{amazon_url} %>" name="amazletlink" target="_blank"><%= $p->{product_name} %></a>
       <div class="amazlet-powered-date" style="font-size:80%;margin-top:5px;line-height:120%">
         posted with
         <a href="http://www.amazlet.com/" title="amazlet" target="_blank">amazlet</a> at 13.08.18</div>
     </div>
-    <div class="amazlet-detail">スティーブン・R. コヴィー <br />キングベアー出版 <br />
-    </div><div class="amazlet-sub-info" style="float: left;"><div class="amazlet-link" style="margin-top: 5px">
-        <a href="http://www.amazon.co.jp/exec/obidos/ASIN/4906638015/umeyuki0f-22/ref=nosim/" name="amazletlink" target="_blank">Amazon.co.jpで詳細を見る</a>
+    <div class="amazlet-detail">
+      % if ( $p->{contributer_name} ) {
+      <%= $p->{contributer} %> <br />
+      % }
+      % if ( $p->{publisher_name} ) {
+      <%= $p->{publisher_name} %> <br />
+      % }
+    </div>
+    <div class="amazlet-sub-info" style="float: left;"><div class="amazlet-link" style="margin-top: 5px">
+        <a href="<%= $p->{amazon_url} %>" name="amazletlink" target="_blank">Amazon.co.jpで詳細を見る</a>
       </div>
     </div>
   </div>

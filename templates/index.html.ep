@@ -27,7 +27,21 @@
         <small>※ 安全なTwitterアカウントを利用したログインをすることで Twitterの情報から、意識の高さを測れます。<br/>アプリ連携によって勝手に発言することはありません。</small>
       </div>
     </div>
-  </div>
+  </div>  
+</div>
+<div id="social_buttons" style="float:right; margin-bottom:20px">
+  <!--   <div id="fb-root"></div><script src="http://connect.facebook.net/ja_JP/all.js#xfbml=1"></script><fb:like href="<%= $base_url %>" send="true" layout="button_count" width="200" show_faces="true" font=""></fb:like> -->
+  <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only.gif" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+  <!--   <g:plusone></g:plusone> -->
+  <!--   <script type=”text/javascript”><br /> -->
+  <!--     window.___gcfg = {lang: ‘ja’};<br /> -->
+  <!--     (function() {<br /> -->
+  <!--     var po = document.createElement(‘script’); po.type = ‘text/javascript’; po.async = true;<br /> -->
+  <!--     po.src = ‘https://apis.google.com/js/plusone.js’;<br /> -->
+  <!--     var s = document.getElementsByTagName(‘script’)[0]; s.parentNode.insertBefore(po, s);<br /> -->
+  <!--     })();<br /> -->
+  <!--   </script> -->
+  <a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-lang="ja">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
 </div>
 <hr/>
 <div class="row">
