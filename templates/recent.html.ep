@@ -16,7 +16,7 @@
         <td>
           <div style="overflow: hidden;">
             <div style="float:left">
-              <img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>
+              <img src="<%=  $entry->{profile_image_url} %>" /><a href="http://twitter.com/<%= $entry->{name} %>">@<%= $entry->{name} %></a>
               <div id="gauge<%= $count %>" style="margin:0 auto;width:200px;height:120px"></div>
               <script>
                 var g = new JustGage({

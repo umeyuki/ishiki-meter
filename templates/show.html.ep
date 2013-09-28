@@ -5,7 +5,7 @@
 <div>
   <div class="row">
     <div class="span4">
-      <p><img src="<%=  $entry->{profile_image_url} %>" /><%= $entry->{name} %>さんの意識調査</p>
+      <p><img src="<%=  $entry->{profile_image_url} %>" /><a href="http://twitter.com/<%= $entry->{name} %>">@<%= $entry->{name} %></a>さんの意識調査</p>
       <div id="gauge" style="margin:0 auto;width:400px;height:240px"></div>
       <script>
         var g = new JustGage({
