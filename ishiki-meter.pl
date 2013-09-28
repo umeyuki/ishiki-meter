@@ -890,11 +890,11 @@ get '/keyword/:name' => sub {
     my $self = shift;
 
     my $keyword = $self->get_keyword($self->param('name'));
-    my $related_products = $self->get_products( $keyword->{id} );
+#    my $related_products = $self->get_products( $keyword->{id} );
     $self->redirect_to('/') unless keys %$keyword > 0;
 
     $self->stash->{keyword} = $keyword;
-    $self->stash->{related_products} = $related_products;
+#    $self->stash->{related_products} = $related_products;
     $self->render('keyword');
 
 };
