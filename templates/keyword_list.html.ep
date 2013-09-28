@@ -15,7 +15,7 @@
           <dd>
             % if ( $item->{completed} ) {            
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % else {
+            % } else {
             ???
             % }
           </dd>
@@ -35,7 +35,7 @@
           <dd>
             % if ( $item->{completed} ) {            
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % else {
+            % } else {
             ???
             % }
           </dd>
@@ -56,7 +56,7 @@
           <dd>
             % if ( $item->{completed} ) {            
             <%= link_to "/keyword/$item->{name}" => begin %><%= $item->{name} %><% end %>
-            % else {
+            % } else {
             ???
             % }
           </dd>
