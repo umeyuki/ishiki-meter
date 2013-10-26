@@ -46,6 +46,6 @@
       % }
     </ul>
   </div>
-  <a href="https:/twitter.com/share" class="twitter-share-button" data-text="<%= $entry->{name} %>の意識の高さは<%= $entry->{ishiki} %>です。 http://ishiki-meter.com/<%= $entry->{entry_id} %>" data-lang="ja" data-size="large" data-related="ishikimeter" data-hashtags="意識メーター"></a>
+  <a href="https:/twitter.com/share" class="twitter-share-button" data-text="<%= $entry->{name} %>の意識の高さは<%= $entry->{ishiki} %>です。 %>" data-lang="ja" data-size="large" data-related="ishikimeter" data-hashtags="意識メーター"></a>
 </div>
 % }
